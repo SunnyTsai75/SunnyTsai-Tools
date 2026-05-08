@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MakeCode Arcade 圖像轉換編輯器 Pro</title>
+  <title>MakeCode Arcade 圖像編輯轉換器 Pro - 全功能修復版</title>
   <style>
     :root {
       --bg: #f7f7fb; --panel: #ffffff; --text: #1f2937; --muted: #6b7280;
@@ -12,28 +12,31 @@
     body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
     header { padding: 20px; text-align: center; background: white; border-bottom: 1px solid var(--border); }
     main { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
-    .panel { background: var(--panel); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .panel { background: var(--panel); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; }
     .field { margin-bottom: 15px; }
     label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
-    input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
     textarea { min-height: 250px; font-family: monospace; font-size: 12px; margin-top: 10px; }
     .canvas-wrap { border: 1px dashed var(--border); background: #eee; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 10px; cursor: crosshair; }
     canvas { image-rendering: pixelated; max-width: 100%; }
     
-    .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin-top: 10px; }
-    .color-cell { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; border-radius: 8px; border: 2px solid transparent; }
+    /* 色盤排版修正 */
+    .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 10px; width: 100%; box-sizing: border-box; }
+    .color-cell { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 2px; border-radius: 8px; border: 2px solid transparent; transition: 0.2s; }
     .color-cell.active { border-color: var(--accent); background: #eef2ff; }
-    .color-input { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; border-radius: 4px; pointer-events: none; }
+    .color-input { width: 28px; height: 28px; padding: 0; border: none; cursor: pointer; border-radius: 4px; }
     .color-label { font-size: 10px; font-weight: bold; margin-top: 2px; }
 
+    /* 按鈕齊寬修正 */
     .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-    button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: #111827; color: white; }
-    .btn-reset { background: #f3f4f6; color: #374151; margin-top: 8px; font-size: 12px; }
+    button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; }
+    .btn-primary { background: var(--accent); color: white; width: 100%; font-size: 16px; margin-top: 10px; }
+    .btn-secondary { background: #111827; color: white; flex: 1; }
+    .btn-reset { background: #f3f4f6; color: #374151; margin-top: 12px; width: 100%; border: 1px solid var(--border); font-size: 14px; }
+    .btn-reset:hover { background: #e5e7eb; }
     
     .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; display: none; z-index: 100; }
-    .nav-back { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 14px; }
+    .nav-back { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 10px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -41,7 +44,7 @@
 
 <header>
   <a href="../" class="nav-back">⬅️ 回到入口大廳</a>
-  <h1>MakeCode Arcade 圖像編輯轉換器</h1>
+  <h1>MakeCode Arcade 圖像編輯轉換器 Pro</h1>
 </header>
 
 <main>
@@ -57,6 +60,7 @@
         <option value="16x16">16x16 (小道具)</option>
         <option value="32x32" selected>32x32 (角色)</option>
         <option value="64x64">64x64 (大角色)</option>
+        <option value="160x120">160x120 (背景)</option>
       </select>
       <div class="btn-group">
         <button type="button" class="btn-secondary" id="flipH">水平翻轉</button>
@@ -65,18 +69,26 @@
     </div>
 
     <div class="field">
-      <label>3. 編輯色盤 (點擊選色，再點圖片塗色)</label>
+      <label>3. 色盤方案</label>
+      <select id="paletteScheme">
+        <option value="default">MakeCode 預設</option>
+        <option value="gameboy">經典 GameBoy 綠</option>
+        <option value="midnight">深夜地牢 (藍紫)</option>
+        <option value="monochrome">黑白灰階</option>
+      </select>
+      
+      <label style="margin-top: 15px;">4. 編輯色盤 (點擊色塊調色，點文字選色繪圖)</label>
       <div class="palette-grid" id="paletteGrid"></div>
       <button class="btn-reset" id="resetPaletteBtn">↺ 還原為預設 16 色</button>
     </div>
 
-    <button class="btn-primary" id="convertBtn" style="width: 100%; font-size: 16px; margin-top: 10px;">重新執行轉換</button>
+    <button class="btn-primary" id="convertBtn">重新執行轉換 (清空編輯)</button>
   </section>
 
   <section class="panel">
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
       <div><label>原始預覽</label><div class="canvas-wrap"><canvas id="sourceCanvas"></canvas></div></div>
-      <div><label>點陣結果 (點擊像素進行修改)</label><div class="canvas-wrap" id="resWrap"><canvas id="resultCanvas"></canvas></div></div>
+      <div><label>點陣編輯區 (支援長按塗鴉)</label><div class="canvas-wrap" id="resWrap"><canvas id="resultCanvas"></canvas></div></div>
     </div>
     <textarea id="outputCode" readonly placeholder="img` ... `"></textarea>
   </section>
@@ -86,14 +98,23 @@
 
 <script>
   const schemes = {
-    default: ["#000000", "#ffffff", "#ff2121", "#ff93c4", "#ff8135", "#fff609", "#249ca3", "#78dc52", "#003fad", "#87f2ff", "#8e2ec4", "#a4839f", "#5c406c", "#e5cdc4", "#91463d", "#000000"]
+    default: ["#000000", "#ffffff", "#ff2121", "#ff93c4", "#ff8135", "#fff609", "#249ca3", "#78dc52", "#003fad", "#87f2ff", "#8e2ec4", "#a4839f", "#5c406c", "#e5cdc4", "#91463d", "#000000"],
+    gameboy: ["#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0"],
+    midnight: ["#000000", "#1d2b53", "#7e2553", "#008751", "#ab5236", "#5f574f", "#c2c3c7", "#fff1e8", "#ff004d", "#ffa300", "#ffec27", "#00e436", "#29adff", "#83769c", "#ff77a8", "#ffccaa"],
+    monochrome: ["#000000", "#111111", "#333333", "#555555", "#777777", "#999999", "#bbbbbb", "#dddddd", "#eeeeee", "#ffffff", "#000000", "#111111", "#333333", "#555555", "#777777", "#999999"]
   };
 
   let currentPaletteHex = [...schemes.default];
-  let selectedColorIdx = 1; // 預設選中白色
+  let selectedColorIdx = 1; 
   let imgObj = null;
   let flipH = false, flipV = false;
-  let pixelData = []; // 儲存當前的點陣數據
+  let pixelData = []; 
+  let isDrawing = false;
+
+  const fileInput = document.getElementById('fileInput');
+  const convertBtn = document.getElementById('convertBtn');
+  const resCanvas = document.getElementById('resultCanvas');
+  const outputCode = document.getElementById('outputCode');
 
   function initPaletteUI() {
     const grid = document.getElementById('paletteGrid');
@@ -101,8 +122,17 @@
     currentPaletteHex.forEach((hex, i) => {
       const cell = document.createElement('div');
       cell.className = 'color-cell' + (i === selectedColorIdx ? ' active' : '');
-      cell.innerHTML = `<input type="color" class="color-input" value="${hex}"><span class="color-label">${i.toString(16)}</span>`;
-      cell.onclick = () => {
+      cell.innerHTML = `<input type="color" class="color-input" data-index="${i}" value="${hex}"><span class="color-label">${i.toString(16)}</span>`;
+      
+      // 點擊色塊本身：開啟顏色選取器並即時轉換
+      cell.querySelector('.color-input').oninput = (e) => {
+        currentPaletteHex[i] = e.target.value;
+        if (imgObj && pixelData.length > 0) renderResult();
+      };
+
+      // 點擊整個 Cell：切換目前要使用的畫筆顏色
+      cell.onclick = (e) => {
+        if(e.target.className === 'color-input') return; // 如果點到 input 就不觸發選取邏輯
         selectedColorIdx = i;
         document.querySelectorAll('.color-cell').forEach(c => c.classList.remove('active'));
         cell.classList.add('active');
@@ -111,11 +141,11 @@
     });
   }
 
-  // 圖像處理邏輯
-  const fileInput = document.getElementById('fileInput');
-  const convertBtn = document.getElementById('convertBtn');
-  const resCanvas = document.getElementById('resultCanvas');
-  const outputCode = document.getElementById('outputCode');
+  document.getElementById('paletteScheme').onchange = (e) => {
+    currentPaletteHex = [...schemes[e.target.value]];
+    initPaletteUI();
+    if (imgObj) convertImage();
+  };
 
   fileInput.onchange = (e) => {
     const reader = new FileReader();
@@ -146,7 +176,6 @@
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
     tempCanvas.width = tw; tempCanvas.height = th;
-    
     tempCtx.save();
     tempCtx.translate(flipH ? tw : 0, flipV ? th : 0);
     tempCtx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
@@ -174,6 +203,7 @@
   }
 
   function renderResult() {
+    if (pixelData.length === 0) return;
     const th = pixelData.length;
     const tw = pixelData[0].length;
     resCanvas.width = tw; resCanvas.height = th;
@@ -201,65 +231,50 @@
     outputCode.value = code;
   }
 
-  // 點擊畫布塗色邏輯
-// --- 在 script 標籤中替換或新增以下邏輯 ---
-
-let isDrawing = false; // 追蹤是否正在按住滑鼠
-
-// 封裝一個統一的塗色函式
-function paintPixel(e) {
-  const rect = resCanvas.getBoundingClientRect();
-  const scaleX = resCanvas.width / rect.width;
-  const scaleY = resCanvas.height / rect.height;
-  const x = Math.floor((e.clientX - rect.left) * scaleX);
-  const y = Math.floor((e.clientY - rect.top) * scaleY);
-
-  if (pixelData[y] && pixelData[y][x] !== undefined) {
-    // 只有當顏色不同時才更新，避免過度渲染
-    if (pixelData[y][x] !== selectedColorIdx) {
-      pixelData[y][x] = selectedColorIdx;
-      renderResult();
+  function paintPixel(e) {
+    const rect = resCanvas.getBoundingClientRect();
+    const scaleX = resCanvas.width / rect.width;
+    const scaleY = resCanvas.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+    if (pixelData[y] && pixelData[y][x] !== undefined) {
+      if (pixelData[y][x] !== selectedColorIdx) {
+        pixelData[y][x] = selectedColorIdx;
+        renderResult();
+      }
     }
   }
-}
 
-// 1. 滑鼠按下：開始畫畫
-resCanvas.onmousedown = (e) => {
-  isDrawing = true;
-  paintPixel(e); // 按下的瞬間先畫一點
-};
-
-// 2. 滑鼠移動：如果按著就持續畫
-resCanvas.onmousemove = (e) => {
-  if (isDrawing) {
-    paintPixel(e);
-  }
-};
-
-// 3. 滑鼠放開或離開：停止畫畫，並自動複製程式碼
-window.onmouseup = () => {
-  if (isDrawing) {
-    isDrawing = false;
-    // 停止畫畫後，執行一次複製
-    navigator.clipboard.writeText(outputCode.value);
-  }
-};
-
-resCanvas.onmouseleave = () => {
-  // 離開畫布但不放開滑鼠時，也先停止記錄，避免到外面亂畫
-  isDrawing = false;
-};
-
-// --- 注意：原本的 resCanvas.onclick 可以刪除，改用上述監聽器 ---
+  resCanvas.onmousedown = (e) => { isDrawing = true; paintPixel(e); };
+  resCanvas.onmousemove = (e) => { if (isDrawing) paintPixel(e); };
+  window.onmouseup = () => { 
+    if (isDrawing) {
+      isDrawing = false; 
+      navigator.clipboard.writeText(outputCode.value);
+      showToast();
+    }
+  };
+  resCanvas.onmouseleave = () => { isDrawing = false; };
 
   function hexToRgb(hex) {
     return { r: parseInt(hex.slice(1,3), 16), g: parseInt(hex.slice(3,5), 16), b: parseInt(hex.slice(5,7), 16) };
   }
 
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 2000);
+  }
+
   document.getElementById('flipH').onclick = () => { flipH = !flipH; drawSource(); convertImage(); };
   document.getElementById('flipV').onclick = () => { flipV = !flipV; drawSource(); convertImage(); };
   convertBtn.onclick = convertImage;
-  document.getElementById('resetPaletteBtn').onclick = () => { currentPaletteHex = [...schemes.default]; initPaletteUI(); convertImage(); };
+  document.getElementById('resetPaletteBtn').onclick = () => { 
+    currentPaletteHex = [...schemes.default]; 
+    document.getElementById('paletteScheme').value = 'default';
+    initPaletteUI(); 
+    if (imgObj) renderResult(); 
+  };
 
   initPaletteUI();
 </script>
