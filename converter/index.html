@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MakeCode Arcade 圖像轉換器 Pro (含重置功能)</title>
+  <title>MakeCode Arcade 圖像轉換編輯器 Pro</title>
   <style>
     :root {
       --bg: #f7f7fb; --panel: #ffffff; --text: #1f2937; --muted: #6b7280;
@@ -17,30 +17,31 @@
     label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
     input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
     textarea { min-height: 250px; font-family: monospace; font-size: 12px; margin-top: 10px; }
-    .canvas-wrap { border: 1px dashed var(--border); background: #eee; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 10px; }
+    .canvas-wrap { border: 1px dashed var(--border); background: #eee; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 10px; cursor: crosshair; }
     canvas { image-rendering: pixelated; max-width: 100%; }
     
     .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin-top: 10px; }
-    .color-cell { display: flex; flex-direction: column; align-items: center; }
-    .color-input { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; border-radius: 4px; }
+    .color-cell { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; border-radius: 8px; border: 2px solid transparent; }
+    .color-cell.active { border-color: var(--accent); background: #eef2ff; }
+    .color-input { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; border-radius: 4px; pointer-events: none; }
     .color-label { font-size: 10px; font-weight: bold; margin-top: 2px; }
 
     .btn-group { display: flex; gap: 8px; margin-top: 10px; }
     button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
     .btn-primary { background: var(--accent); color: white; }
     .btn-secondary { background: #111827; color: white; }
-    .btn-reset { background: #e5e7eb; color: #374151; margin-top: 8px; font-size: 12px; }
-    .btn-reset:hover { background: #d1d5db; }
+    .btn-reset { background: #f3f4f6; color: #374151; margin-top: 8px; font-size: 12px; }
     
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; display: none; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; display: none; z-index: 100; }
+    .nav-back { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 14px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>MakeCode Arcade 圖像轉換器 Pro</h1>
-  <p>自訂色盤 ➔ 點陣化 ➔ 自動複製</p>
+  <a href="../" class="nav-back">⬅️ 回到入口大廳</a>
+  <h1>MakeCode Arcade 圖像編輯轉換器</h1>
 </header>
 
 <main>
@@ -55,7 +56,7 @@
       <select id="preset" style="margin-bottom: 8px;">
         <option value="16x16">16x16 (小道具)</option>
         <option value="32x32" selected>32x32 (角色)</option>
-        <option value="160x120">160x120 (背景)</option>
+        <option value="64x64">64x64 (大角色)</option>
       </select>
       <div class="btn-group">
         <button type="button" class="btn-secondary" id="flipH">水平翻轉</button>
@@ -64,26 +65,18 @@
     </div>
 
     <div class="field">
-      <label>3. 色盤方案</label>
-      <select id="paletteScheme">
-        <option value="default">MakeCode 預設</option>
-        <option value="gameboy">經典 GameBoy 綠</option>
-        <option value="midnight">深夜地牢 (藍紫)</option>
-        <option value="monochrome">黑白灰階</option>
-      </select>
-      
-      <label style="margin-top: 15px;">4. 手動微調色盤</label>
+      <label>3. 編輯色盤 (點擊選色，再點圖片塗色)</label>
       <div class="palette-grid" id="paletteGrid"></div>
-      <button class="btn-reset" id="resetPaletteBtn" style="width: 100%;">↺ 還原為預設 16 色</button>
+      <button class="btn-reset" id="resetPaletteBtn">↺ 還原為預設 16 色</button>
     </div>
 
-    <button class="btn-primary" id="convertBtn" style="width: 100%; font-size: 16px; margin-top: 10px;">執行轉換</button>
+    <button class="btn-primary" id="convertBtn" style="width: 100%; font-size: 16px; margin-top: 10px;">重新執行轉換</button>
   </section>
 
   <section class="panel">
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
       <div><label>原始預覽</label><div class="canvas-wrap"><canvas id="sourceCanvas"></canvas></div></div>
-      <div><label>點陣結果</label><div class="canvas-wrap"><canvas id="resultCanvas"></canvas></div></div>
+      <div><label>點陣結果 (點擊像素進行修改)</label><div class="canvas-wrap" id="resWrap"><canvas id="resultCanvas"></canvas></div></div>
     </div>
     <textarea id="outputCode" readonly placeholder="img` ... `"></textarea>
   </section>
@@ -93,55 +86,42 @@
 
 <script>
   const schemes = {
-    default: ["#000000", "#ffffff", "#ff2121", "#ff93c4", "#ff8135", "#fff609", "#249ca3", "#78dc52", "#003fad", "#87f2ff", "#8e2ec4", "#a4839f", "#5c406c", "#e5cdc4", "#91463d", "#000000"],
-    gameboy: ["#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0", "#081820", "#346856", "#88c070", "#e0f8d0"],
-    midnight: ["#000000", "#1d2b53", "#7e2553", "#008751", "#ab5236", "#5f574f", "#c2c3c7", "#fff1e8", "#ff004d", "#ffa300", "#ffec27", "#00e436", "#29adff", "#83769c", "#ff77a8", "#ffccaa"],
-    monochrome: ["#000000", "#111111", "#333333", "#555555", "#777777", "#999999", "#bbbbbb", "#dddddd", "#eeeeee", "#ffffff", "#000000", "#111111", "#333333", "#555555", "#777777", "#999999"]
+    default: ["#000000", "#ffffff", "#ff2121", "#ff93c4", "#ff8135", "#fff609", "#249ca3", "#78dc52", "#003fad", "#87f2ff", "#8e2ec4", "#a4839f", "#5c406c", "#e5cdc4", "#91463d", "#000000"]
   };
 
   let currentPaletteHex = [...schemes.default];
+  let selectedColorIdx = 1; // 預設選中白色
   let imgObj = null;
   let flipH = false, flipV = false;
+  let pixelData = []; // 儲存當前的點陣數據
 
   function initPaletteUI() {
     const grid = document.getElementById('paletteGrid');
     grid.innerHTML = '';
     currentPaletteHex.forEach((hex, i) => {
       const cell = document.createElement('div');
-      cell.className = 'color-cell';
-      cell.innerHTML = `<input type="color" class="color-input" data-index="${i}" value="${hex}"><span class="color-label">${i.toString(16)}</span>`;
-      grid.appendChild(cell);
-    });
-    document.querySelectorAll('.color-input').forEach(input => {
-      input.oninput = (e) => {
-        currentPaletteHex[e.target.dataset.index] = e.target.value;
-        if (imgObj) convertBtn.click();
+      cell.className = 'color-cell' + (i === selectedColorIdx ? ' active' : '');
+      cell.innerHTML = `<input type="color" class="color-input" value="${hex}"><span class="color-label">${i.toString(16)}</span>`;
+      cell.onclick = () => {
+        selectedColorIdx = i;
+        document.querySelectorAll('.color-cell').forEach(c => c.classList.remove('active'));
+        cell.classList.add('active');
       };
+      grid.appendChild(cell);
     });
   }
 
-  document.getElementById('paletteScheme').onchange = (e) => {
-    currentPaletteHex = [...schemes[e.target.value]];
-    initPaletteUI();
-    if (imgObj) convertBtn.click();
-  };
-
-  document.getElementById('resetPaletteBtn').onclick = () => {
-    currentPaletteHex = [...schemes.default];
-    document.getElementById('paletteScheme').value = 'default';
-    initPaletteUI();
-    if (imgObj) convertBtn.click();
-  };
-
+  // 圖像處理邏輯
   const fileInput = document.getElementById('fileInput');
   const convertBtn = document.getElementById('convertBtn');
+  const resCanvas = document.getElementById('resultCanvas');
   const outputCode = document.getElementById('outputCode');
 
   fileInput.onchange = (e) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       imgObj = new Image();
-      imgObj.onload = () => drawSource();
+      imgObj.onload = () => { drawSource(); convertImage(); };
       imgObj.src = event.target.result;
     };
     reader.readAsDataURL(e.target.files[0]);
@@ -160,28 +140,25 @@
     ctx.restore();
   }
 
-  document.getElementById('flipH').onclick = () => { flipH = !flipH; drawSource(); };
-  document.getElementById('flipV').onclick = () => { flipV = !flipV; drawSource(); };
-
-  convertBtn.onclick = () => {
-    if (!imgObj) return alert("請先上傳圖片！");
+  function convertImage() {
+    if (!imgObj) return;
     const [tw, th] = document.getElementById('preset').value.split('x').map(Number);
-    const resCanvas = document.getElementById('resultCanvas');
-    const resCtx = resCanvas.getContext('2d');
-    resCanvas.width = tw; resCanvas.height = th;
-    resCtx.save();
-    resCtx.translate(flipH ? tw : 0, flipV ? th : 0);
-    resCtx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-    resCtx.drawImage(imgObj, 0, 0, tw, th);
-    resCtx.restore();
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = tw; tempCanvas.height = th;
+    
+    tempCtx.save();
+    tempCtx.translate(flipH ? tw : 0, flipV ? th : 0);
+    tempCtx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    tempCtx.drawImage(imgObj, 0, 0, tw, th);
+    tempCtx.restore();
 
-    const imgDataObj = resCtx.getImageData(0, 0, tw, th);
-    const data = imgDataObj.data;
+    const data = tempCtx.getImageData(0, 0, tw, th).data;
     const paletteRGB = currentPaletteHex.map(h => [parseInt(h.slice(1,3), 16), parseInt(h.slice(3,5), 16), parseInt(h.slice(5,7), 16)]);
 
-    let code = "img` \n";
+    pixelData = [];
     for (let y = 0; y < th; y++) {
-      let rowText = "    ";
+      let row = [];
       for (let x = 0; x < tw; x++) {
         const i = (y * tw + x) * 4;
         let minIdx = 0, minDist = Infinity;
@@ -189,19 +166,66 @@
           const d = Math.pow(data[i]-rgb[0],2) + Math.pow(data[i+1]-rgb[1],2) + Math.pow(data[i+2]-rgb[2],2);
           if (d < minDist) { minDist = d; minIdx = idx; }
         });
-        data[i] = paletteRGB[minIdx][0]; data[i+1] = paletteRGB[minIdx][1]; data[i+2] = paletteRGB[minIdx][2];
-        rowText += minIdx.toString(16) + " ";
+        row.push(minIdx);
       }
-      code += rowText + "\n";
+      pixelData.push(row);
     }
+    renderResult();
+  }
+
+  function renderResult() {
+    const th = pixelData.length;
+    const tw = pixelData[0].length;
+    resCanvas.width = tw; resCanvas.height = th;
+    const ctx = resCanvas.getContext('2d');
+    const imgDataObj = ctx.createImageData(tw, th);
+    
+    let code = "img` \n";
+    pixelData.forEach((row, y) => {
+      let rowText = "    ";
+      row.forEach((colorIdx, x) => {
+        const i = (y * tw + x) * 4;
+        const rgb = hexToRgb(currentPaletteHex[colorIdx]);
+        imgDataObj.data[i] = rgb.r;
+        imgDataObj.data[i+1] = rgb.g;
+        imgDataObj.data[i+2] = rgb.b;
+        imgDataObj.data[i+3] = 255;
+        rowText += colorIdx.toString(16) + " ";
+      });
+      code += rowText + "\n";
+    });
     code += "`";
-    resCtx.putImageData(imgDataObj, 0, 0);
+    
+    ctx.putImageData(imgDataObj, 0, 0);
     resCanvas.style.width = (tw * 8) + "px"; resCanvas.style.height = (th * 8) + "px";
     outputCode.value = code;
-    navigator.clipboard.writeText(code);
-    const toast = document.getElementById('toast'); toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 2000);
+  }
+
+  // 點擊畫布塗色邏輯
+  resCanvas.onclick = (e) => {
+    const rect = resCanvas.getBoundingClientRect();
+    const scaleX = resCanvas.width / rect.width;
+    const scaleY = resCanvas.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+    if (pixelData[y] && pixelData[y][x] !== undefined) {
+      pixelData[y][x] = selectedColorIdx;
+      renderResult();
+      // 自動複製
+      navigator.clipboard.writeText(outputCode.value);
+    }
   };
+
+  function hexToRgb(hex) {
+    return { r: parseInt(hex.slice(1,3), 16), g: parseInt(hex.slice(3,5), 16), b: parseInt(hex.slice(5,7), 16) };
+  }
+
+  document.getElementById('flipH').onclick = () => { flipH = !flipH; drawSource(); convertImage(); };
+  document.getElementById('flipV').onclick = () => { flipV = !flipV; drawSource(); convertImage(); };
+  convertBtn.onclick = convertImage;
+  document.getElementById('resetPaletteBtn').onclick = () => { currentPaletteHex = [...schemes.default]; initPaletteUI(); convertImage(); };
+
   initPaletteUI();
 </script>
 </body>
