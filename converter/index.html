@@ -202,20 +202,55 @@
   }
 
   // 點擊畫布塗色邏輯
-  resCanvas.onclick = (e) => {
-    const rect = resCanvas.getBoundingClientRect();
-    const scaleX = resCanvas.width / rect.width;
-    const scaleY = resCanvas.height / rect.height;
-    const x = Math.floor((e.clientX - rect.left) * scaleX);
-    const y = Math.floor((e.clientY - rect.top) * scaleY);
+// --- 在 script 標籤中替換或新增以下邏輯 ---
 
-    if (pixelData[y] && pixelData[y][x] !== undefined) {
+let isDrawing = false; // 追蹤是否正在按住滑鼠
+
+// 封裝一個統一的塗色函式
+function paintPixel(e) {
+  const rect = resCanvas.getBoundingClientRect();
+  const scaleX = resCanvas.width / rect.width;
+  const scaleY = resCanvas.height / rect.height;
+  const x = Math.floor((e.clientX - rect.left) * scaleX);
+  const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+  if (pixelData[y] && pixelData[y][x] !== undefined) {
+    // 只有當顏色不同時才更新，避免過度渲染
+    if (pixelData[y][x] !== selectedColorIdx) {
       pixelData[y][x] = selectedColorIdx;
       renderResult();
-      // 自動複製
-      navigator.clipboard.writeText(outputCode.value);
     }
-  };
+  }
+}
+
+// 1. 滑鼠按下：開始畫畫
+resCanvas.onmousedown = (e) => {
+  isDrawing = true;
+  paintPixel(e); // 按下的瞬間先畫一點
+};
+
+// 2. 滑鼠移動：如果按著就持續畫
+resCanvas.onmousemove = (e) => {
+  if (isDrawing) {
+    paintPixel(e);
+  }
+};
+
+// 3. 滑鼠放開或離開：停止畫畫，並自動複製程式碼
+window.onmouseup = () => {
+  if (isDrawing) {
+    isDrawing = false;
+    // 停止畫畫後，執行一次複製
+    navigator.clipboard.writeText(outputCode.value);
+  }
+};
+
+resCanvas.onmouseleave = () => {
+  // 離開畫布但不放開滑鼠時，也先停止記錄，避免到外面亂畫
+  isDrawing = false;
+};
+
+// --- 注意：原本的 resCanvas.onclick 可以刪除，改用上述監聽器 ---
 
   function hexToRgb(hex) {
     return { r: parseInt(hex.slice(1,3), 16), g: parseInt(hex.slice(3,5), 16), b: parseInt(hex.slice(5,7), 16) };
