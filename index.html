@@ -54,6 +54,7 @@
             max-width: 800px; 
             width: 100%; 
             box-sizing: border-box; 
+            margin-bottom: 40px;
         }
         
         /* 遊戲卡片 RWD 網格系統 */
@@ -106,24 +107,37 @@
             cursor: not-allowed; 
             margin-top: 15px;
         }
+
+        /* 📊 數據統計區塊樣式 */
+        .info-footer {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-left: 5px solid #8e2ec4;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            box-sizing: border-box;
+        }
+        .info-title { color: #8e2ec4; font-size: 18px; margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .info-text { color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0; }
+        .info-ul { margin: 10px 0 0 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-    <!-- 🛠️ MakeCode 工具箱 -->
     <div class="container">
         <h1>🛠️ MakeCode 工具箱</h1>
         <a href="converter/" class="tool-link">🖼️ 圖像點陣化轉換器 (Pro)</a>
+        <a href="midi-tool/" class="tool-link">🎵 MIDI ➔ MakeCode 轉碼器</a>
     </div>
 
-    <!-- 🎮 遊戲作品專區 -->
     <section class="game-section">
         <h2 style="color: #2563eb; font-size: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 20px; margin-top: 0;">
             🎮 遊戲 (Games)
         </h2>
         
         <div class="game-grid">
-            <!-- 遊戲項目 1 -->
             <div class="game-card">
                 <div>
                     <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px;">《演化論—物種起源 v3.1》</h3>
@@ -137,6 +151,17 @@
             </div>
         </div>
     </section>
+
+    <footer class="info-footer">
+        <h4 class="info-title">📊 如何知道有多少人玩過？</h4>
+        <p class="info-text">如果您未來想要知道點擊人數或玩家數量，可以考慮以下幾種簡單的做法：</p>
+        <ul class="info-ul">
+            <li>
+                <strong>做法 A：在 GitHub 網站上查看流量（最推薦、最簡單）</strong><br>
+                如果您將這個連結放在您的 GitHub 網站（本頁面）上，只要玩家是透過您的 GitHub 網站點擊進去的，您就可以直接在該 GitHub 專案的 <strong>「Insights」</strong> -> <strong>「Traffic」</strong> 面板中，看見每天有多少人造訪了您的網站、點擊了哪些連結。
+            </li>
+        </ul>
+    </footer>
 
 </body>
 </html>
