@@ -5,58 +5,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的遊戲開發工具箱</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 90%; }
-        h1 { color: #1f2937; margin-bottom: 30px; }
-        .tool-link { display: block; padding: 20px; margin: 10px 0; background: #2563eb; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; transition: 0.3s; }
+        /* 基礎全域排版：改為垂直置中排列，並允許網頁隨內容延伸高度 */
+        body { 
+            font-family: sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 40px 20px; 
+            box-sizing: border-box;
+        }
+        
+        /* 工具箱主容器 */
+        .container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            text-align: center; 
+            max-width: 500px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            margin-bottom: 40px;
+        }
+        
+        h1 { color: #1f2937; margin-top: 0; margin-bottom: 30px; }
+        
+        /* 工具連結樣式 */
+        .tool-link { 
+            display: block; 
+            padding: 20px; 
+            margin: 10px 0; 
+            background: #2563eb; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            transition: 0.3s; 
+        }
         .tool-link:hover { background: #1d4ed8; transform: translateY(-3px); }
         .coming-soon { background: #e5e7eb; color: #9ca3af; pointer-events: none; }
+        
+        /* 遊戲專區外層容器 */
+        .game-section { 
+            max-width: 800px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        
+        /* 遊戲卡片 RWD 網格系統 */
+        .game-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        /* 獨立遊戲卡片樣式 */
+        .game-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            box-sizing: border-box;
+        }
+        
+        /* 遊戲卡片按鈕樣式 */
+        .game-btn { 
+            display: block; 
+            text-align: center; 
+            background: #2563eb; 
+            color: white; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            transition: 0.2s; 
+            margin-top: 15px;
+        }
+        .game-btn:hover { background: #1d4ed8; }
+        
+        /* 未開放遊戲按鈕樣式 */
+        .game-btn-disabled { 
+            display: block; 
+            text-align: center; 
+            background: #cbd5e1; 
+            color: #64748b; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            cursor: not-allowed; 
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
+
+    <!-- 🛠️ MakeCode 工具箱 -->
     <div class="container">
         <h1>🛠️ MakeCode 工具箱</h1>
         <a href="converter/" class="tool-link">🖼️ 圖像點陣化轉換器 (Pro)</a>
-        <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" target="_blank" class="tool-link">《演化論—物種起源 v3.1》</a>
+        <a href="midi-tool/" class="tool-link">🎵 MIDI ➔ MakeCode 轉碼器</a>
         <a href="#" class="tool-link coming-soon">🗺️ 地圖編輯器 (開發中)</a>
-        <a href="#" class="tool-link coming-soon">🎵 音效轉碼器 (開發中)</a>
     </div>
+
+    <!-- 🎮 遊戲作品專區 -->
+    <section class="game-section">
+        <h2 style="color: #2563eb; font-size: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 20px; margin-top: 0;">
+            🎮 遊戲 (Games)
+        </h2>
+        
+        <div class="game-grid">
+            <!-- 遊戲項目 1 -->
+            <div class="game-card">
+                <div>
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px;">《演化論—物種起源 v3.1》</h3>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.4;">
+                        遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生意昂然，抑或殺機四伏？
+                    </p>
+                </div>
+                <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" target="_blank" class="game-btn">
+                    開始玩遊戲 🕹️
+                </a>
+            </div>
+
+            <!-- 遊戲項目 2 -->
+            <div class="game-card">
+                <div>
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px;">🐛 綠色毛毛蟲大冒險</h3>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.4;">
+                        操縱可愛的點陣毛毛蟲躲避障礙物，吃掉蘋果來長大得分！
+                    </p>
+                </div>
+                <span class="game-btn-disabled">即將登場 🔒</span>
+            </div>
+        </div>
+    </section>
+
 </body>
-    <section style="margin-top: 40px; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; padding: 0 20px; box-sizing: border-box;">
-  <h2 style="color: #2563eb; font-size: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 20px;">
-    🎮 我的網頁遊戲作品 (My Games)
-  </h2>
-  
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-    
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px;">✈️ 1943 空戰英豪</h3>
-        <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0; line-height: 1.4;">
-          使用自製的音樂與 AI 圖像轉換器打造的復古飛行射擊遊戲！消滅所有敵機取得高分。
-        </p>
-      </div>
-      <a href="https://arcade.makecode.com/---你的遊戲分享代碼---" target="_blank" 
-         style="display: block; text-align: center; background: #2563eb; color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 14px; transition: 0.2s;">
-        開始玩遊戲 🕹️
-      </a>
-    </div>
-
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px;">🐛 綠色毛毛蟲大冒險</h3>
-        <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0; line-height: 1.4;">
-          操縱可愛的點陣毛毛蟲躲避障礙物，吃掉蘋果來長大得分！
-        </p>
-      </div>
-      <a href="#" class="coming-soon" style="display: block; text-align: center; background: #cbd5e1; color: #64748b; text-decoration: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: not-allowed;">
-        即將登場 🔒
-      </a>
-    </div>
-
-  </div>
-</section>
 </html>
-
-
-
