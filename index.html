@@ -4,122 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🛠️ 我的 MakeCode 開發基地</title>
+    
     <style>
-        /* 基礎全域排版 */
+        /* 【全域基礎排版】設定整個網頁的背景色、字型與對齊方式 */
         body { 
             font-family: sans-serif; 
-            background: #f0f2f5; 
-            margin: 0; 
-            padding: 40px 20px; 
+            background: #f0f2f5;          /* 淺灰色背景 */
             display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
+            flex-direction: column;       /* 讓網頁內容由上至下垂直排列 */
+            align-items: center;          /* 水平居中 */
+            justify-content: flex-start;  /* 從最上方開始排列 */
+            min-height: 100vh;            /* 確保網頁高度至少撐滿整個螢幕 */
+            margin: 0; 
+            padding: 40px 20px;           /* 網頁四周的留白 */
             box-sizing: border-box;
         }
 
-        /* 👑 核心優化：雙欄網格系統 */
+        /* 【主版面雙欄網格】在電腦版畫面上，將內容切分為左右 1:1 的兩個區塊 */
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 電腦版強制 1:1 左右對稱兩欄 */
-            gap: 30px;
-            max-width: 1000px;
-            width: 100%;
+            grid-template-columns: 1fr 1fr; /* 左右各佔一半寬度 */
+            gap: 30px;                    /* 左右區塊之間的間距 */
+            max-width: 1000px;            /* 網頁最大總寬度 */
+            width: 100%;                  /* 在小螢幕時自動縮小 */
             box-sizing: border-box;
-            align-items: stretch; /* 讓左右兩欄的高度自動拉到一樣長 */
-            margin-bottom: 40px;
+            align-items: stretch;         /* 關鍵：強制讓左右兩欄的高度保持完美一致 */
+            margin-bottom: 30px;          /* 與下方計次器頁尾的距離 */
         }
 
-        /* 統一的區塊卡片外觀 */
+        /* 【大卡片外觀】白色底座、圓角與微陰影，套用在工具箱與遊戲專區 */
         .box-card {
             background: white;
             padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+            border-radius: 20px;          /* 圓角弧度 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04); /* 微弱的現代感陰影 */
             box-sizing: border-box;
             display: flex;
-            flex-direction: column;
+            flex-direction: column;       /* 卡片內部內容由上至下排列 */
             justify-content: flex-start;
         }
 
-        /* 標題樣式 */
+        /* 【大區塊標題】工具箱與遊戲專區的 H1, H2 標題樣式 */
         h1, h2 { 
             color: #1f2937; 
             font-size: 22px; 
             margin-top: 0; 
             margin-bottom: 25px; 
-            border-bottom: 2px solid #e2e8f0; 
+            border-bottom: 2px solid #e2e8f0; /* 標題下方的灰色裝飾細線 */
             padding-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 8px;                     /* 圖示與文字之間的距離 */
         }
         
-        /* 工具按鈕與遊戲按鈕的基礎樣式 */
+        /* 【藍色按鈕樣式】網頁內所有藍色超連結按鈕的通用外觀 */
         .btn-link { 
             display: block; 
-            text-align: center;
+            text-align: center;           /* 文字居中 */
             padding: 16px; 
-            margin: 10px 0; 
-            background: #2563eb; 
+            margin: 10px 0;               /* 按鈕之間的上下上下外距 */
+            background: #2563eb;          /* 亮藍色背景 */
             color: white; 
-            text-decoration: none; 
-            border-radius: 12px; 
+            text-decoration: none;        /* 移除超連結底線 */
+            border-radius: 12px;          /* 按鈕圓角 */
             font-weight: bold; 
             font-size: 15px;
-            transition: 0.3s; 
+            transition: 0.3s;             /* 動態變化的延伸時間（讓懸停動畫更平滑） */
             box-sizing: border-box;
         }
+        /* 按鈕滑鼠懸停（Hover）效果：顏色變深並向上微浮 3 像素 */
         .btn-link:hover { background: #1d4ed8; transform: translateY(-3px); }
         
-        /* 內部小遊戲卡片外觀 */
+        /* 【內部小遊戲卡片】包覆在遊戲簡介外面的淺灰色裝飾框 */
         .inner-game {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: #f8fafc;          /* 淺灰色底 */
+            border: 1px solid #e2e8f0;    /* 細緻的邊框 */
             border-radius: 12px;
             padding: 18px;
             margin-top: 5px;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            justify-content: space-between;
+            height: 100%;                 /* 撐滿右邊大卡片剩餘的高度 */
+            justify-content: space-between; /* 讓簡介在上方，按鈕貼在最下方 */
         }
 
-        /* 📊 數據統計區塊樣式 */
+        /* 【實時計次器頁尾】位於網頁最底部的統計橫條 */
         .info-footer {
             max-width: 1000px;
             width: 100%;
             background: #ffffff;
-            border-left: 5px solid #8e2ec4;
+            border-left: 5px solid #2563eb; /* 左側的藍色裝飾粗線，與按鈕呼應 */
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             box-sizing: border-box;
+            display: flex;
+            justify-content: space-between; /* 讓計次器靠左，版權宣告靠右 */
+            align-items: center;            /* 垂直置中對齊 */
         }
-        .info-title { color: #8e2ec4; font-size: 16px; margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .info-text { color: #4b5563; font-size: 13px; line-height: 1.6; margin: 0; }
-        .info-ul { margin: 8px 0 0 0; padding-left: 20px; color: #4b5563; font-size: 13px; line-height: 1.6; }
 
-        /* 📱 手機版自適應優化 */
+        /* 計次器內部的文字與圖片排版 */
+        .counter-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .counter-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        /* 【📱 RWD 手機版自適應優化】當螢幕寬度小於 768px 時自動觸發 */
         @media (max-width: 768px) {
             .main-layout {
-                grid-template-columns: 1fr; /* 螢幕太小時自動彈性變回單欄上下排列 */
+                grid-template-columns: 1fr; /* 左右雙欄自動變成單欄上下排列 */
                 gap: 20px;
+            }
+            .info-footer {
+                flex-direction: column;     /* 頁尾內容在手機上改為上下排列 */
+                gap: 10px;
+                align-items: flex-start;    /* 改為靠左對齊 */
             }
         }
     </style>
 </head>
 <body>
+
     <div class="main-layout">
+
         <div class="box-card">
             <h1>🛠️ MakeCode 工具箱</h1>
             <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                
                 <a href="converter/" class="btn-link">🖼️ 圖像點陣化轉換器 (Pro)</a>
+                
+                <a href="midi-tool/" class="btn-link">🎵 MIDI ➔ MakeCode 轉碼器</a>
+                
             </div>
         </div>
 
         <div class="box-card">
             <h2>🎮 遊戲 (Games)</h2>
+            
             <div class="inner-game">
                 <div>
                     <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px;">《演化論—物種起源 v3.1》</h3>
@@ -127,11 +154,24 @@
                         遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生意昂然，抑或殺機四伏？
                     </p>
                 </div>
+                
                 <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" class="btn-link" style="margin-bottom: 0;">
                     開始玩遊戲 🕹️
                 </a>
             </div>
         </div>
+
     </div>
+    <footer class="info-footer">
+        
+        <div class="counter-box">
+            <span class="counter-label">🚀 累積瀏覽人次：</span>
+            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fsunnytsai75.github.io%2FSunnyTsai-Tools%2F&count_bg=%232563EB&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" alt="計次器"/>
+        </div>
+        
+        <div style="font-size: 12px; color: #9ca3af;">SunnyTsai-Tools © 2026</div>
+        
+    </footer>
+
 </body>
 </html>
