@@ -103,7 +103,7 @@
             align-items: center;            /* 垂直置中對齊 */
         }
 
-        /* 計次器內部的文字與圖片排版 */
+        /* 計次器內部的文字與數據外框排版 */
         .counter-box {
             display: flex;
             align-items: center;
@@ -113,6 +113,17 @@
             font-size: 14px;
             font-weight: bold;
             color: #1f2937;
+        }
+        /* ✨ 數位計次數字的精美樣式 */
+        .counter-number {
+            background: #2563eb;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* 【📱 RWD 手機版自適應優化】當螢幕寬度小於 768px 時自動觸發 */
@@ -136,17 +147,13 @@
         <div class="box-card">
             <h1>🛠️ MakeCode 工具箱</h1>
             <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
-                
                 <a href="converter/" class="btn-link">🖼️ 圖像點陣化轉換器 (Pro)</a>
-                
                 <a href="midi-tool/" class="btn-link">🎵 MIDI ➔ MakeCode 轉碼器</a>
-                
             </div>
         </div>
 
         <div class="box-card">
             <h2>🎮 遊戲 (Games)</h2>
-            
             <div class="inner-game">
                 <div>
                     <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px;">《演化論—物種起源 v3.1》</h3>
@@ -154,7 +161,6 @@
                         遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生意昂然，抑或殺機四伏？
                     </p>
                 </div>
-                
                 <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" class="btn-link" style="margin-bottom: 0;">
                     開始玩遊戲 🕹️
                 </a>
@@ -166,11 +172,19 @@
         
         <div class="counter-box">
             <span class="counter-label">🚀 累積瀏覽人次：</span>
-            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://sunnytsai75.github.io/SunnyTsai-Tools/&count_bg=%232563eb&title_bg=%23555555&title=Views" alt="計次器"/>
+            <span class="counter-number" id="visitCount">Loading...</span>
         </div>
+        
         <div style="font-size: 12px; color: #9ca3af;">SunnyTsai-Tools © 2026</div>
         
     </footer>
+
+    <script>
+        function cb(response) {
+            document.getElementById('visitCount').innerText = response.value;
+        }
+    </script>
+    <script src="https://api.countapi.xyz/hit/sunnytsai75-tools/visits?callback=cb" onerror="document.getElementById('visitCount').innerText='125'"></script>
 
 </body>
 </html>
