@@ -7,7 +7,39 @@
   <style>
     :root { --bg: #f7f7fb; --panel: #ffffff; --text: #1f2937; --border: #d1d5db; --accent: #2563eb; --radius: 18px; }
     body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
-    header { padding: 20px; text-align: center; background: white; border-bottom: 1px solid var(--border); }
+    header {
+            padding: 20px;
+            text-align: center;
+            background: white;
+            border-bottom: 1px solid var(--border);
+          }
+          
+          .header-title-row {
+            position: relative;
+            width: fit-content;
+            margin: 0 auto;
+          }
+          
+          .back-btn {
+            position: absolute;
+            left: calc(100% + 24px);
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            padding: 9px 14px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+          }
+          
+          .back-btn:hover {
+            background: #dbeafe;
+          }
+    
     main { max-width: 1000px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
     .panel { background: var(--panel); border-radius: var(--radius); padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .field { margin-bottom: 25px; }
@@ -40,15 +72,30 @@
     .canvas-wrap { border: 1px solid #eee; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 10px; }
     canvas { image-rendering: pixelated; max-width: 100%; }
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 30px; border-radius: 50px; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; }
-    .nav-back { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 10px; }
     .status-tag { display: inline-block; padding: 4px 12px; background: #eef2ff; color: #4338ca; border-radius: 4px; font-size: 12px; margin-top: 10px; font-weight: bold; }
+    @media (max-width: 720px) {
+      .header-title-row {
+        width: 100%;
+      }
+      .back-btn {
+        position: static;
+        display: inline-block;
+        transform: none;
+        margin-top: 8px;
+      }
+        main {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <a href="../" class="back-btn">⬅️ 回到主首頁</a>
-  <h1>MakeCode Arcade 圖像轉換器</h1>
+  <div class="header-title-row">
+    <h1>MakeCode Arcade 圖像轉換器</h1>
+    <a href="../" class="back-btn">⬅️ 回到主首頁</a>
+  </div>
   <p style="color: #666; margin: 5px 0;">選取圖片後，程式碼將自動生成</p>
 </header>
 
