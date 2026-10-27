@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MakeCode Arcade 自動轉換器</title>
   <style>
-    :root { --bg: #f7f7fb; --panel: #ffffff; --text: #1f2937; --border: #d1d5db; --accent: #2563eb; --radius: 18px; }
+    :root { --bg: #f7f7fb; --panel: #ffffff; --text: #1f2937; --border: #d1d5db; --accent: #000000; /* 將強調色改為黑色 */ --radius: 18px; }
     body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
     header {
             padding: 20px;
@@ -20,42 +20,51 @@
             margin: 0 auto;
           }
           
+          /* 將回到主首頁按鈕改為黑底白字風格 */
           .back-btn {
             position: absolute;
             left: calc(100% + 24px);
             top: 50%;
             transform: translateY(-50%);
             white-space: nowrap;
-            padding: 9px 14px;
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-            border-radius: 999px;
+            
+            /* 黑底白字設定 */
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            background: #000000;
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: bold;
             text-decoration: none;
+            transition: 0.2s;
           }
           
           .back-btn:hover {
-            background: #dbeafe;
+            background: #333333;
+            /* 保持垂直置中的同時，加上懸浮上移效果 */
+            transform: translateY(calc(-50% - 2px)); 
           }
     
     main { max-width: 1000px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
     .panel { background: var(--panel); border-radius: var(--radius); padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .field { margin-bottom: 25px; }
-    label { display: block; font-weight: bold; font-size: 15px; margin-bottom: 10px; color: var(--accent); }
+    label { display: block; font-weight: bold; font-size: 15px; margin-bottom: 10px; color: var(--text); }
     input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
     
     /* 代碼區域容器 */
     .code-container { position: relative; margin-top: 10px; }
     textarea { min-height: 350px; font-family: monospace; font-size: 12px; background: #fafafa; border: 1px solid #eee; resize: vertical; line-height: 1.2; }
     
-    /* 複製按鈕樣式 */
+    /* 複製按鈕樣式 (一併改為黑底白字) */
     .copy-btn {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: var(--accent);
+      background: #000000;
       color: white;
       border: none;
       padding: 6px 15px;
@@ -66,13 +75,14 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       transition: 0.2s;
     }
-    .copy-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .copy-btn:hover { background: #333333; transform: translateY(-1px); }
     .copy-btn:active { transform: translateY(0); }
 
     .canvas-wrap { border: 1px solid #eee; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 250px; border-radius: 10px; }
     canvas { image-rendering: pixelated; max-width: 100%; }
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 30px; border-radius: 50px; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; }
-    .status-tag { display: inline-block; padding: 4px 12px; background: #eef2ff; color: #4338ca; border-radius: 4px; font-size: 12px; margin-top: 10px; font-weight: bold; }
+    .status-tag { display: inline-block; padding: 4px 12px; background: #f3f4f6; color: #1f2937; border-radius: 4px; font-size: 12px; margin-top: 10px; font-weight: bold; }
+    
     @media (max-width: 720px) {
       .header-title-row {
         width: 100%;
@@ -83,7 +93,10 @@
         transform: none;
         margin-top: 8px;
       }
-        main {
+      .back-btn:hover {
+        transform: translateY(-2px);
+      }
+      main {
         grid-template-columns: 1fr;
       }
     }
