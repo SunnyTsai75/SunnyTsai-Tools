@@ -1,169 +1,232 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦁 鬆松的開發基地</title>
-    <meta property="og:title" content="🦁 鬆鬆的開發基地" />
-    <meta property="og:description" content="歡迎來到鬆鬆的開發基地！" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sunnytsai75.github.io/SunnyTsai-Tools/" />
+    <title>SunnyTsai-Tools 首頁</title>
     <style>
-        /* 【全域基礎排版】設定整個網頁的背景色、字型與對齊方式 */
-        body { 
-            font-family: sans-serif; 
-            background: #f0f2f5;          /* 淺灰色背景 */
-            display: flex; 
-            flex-direction: column;       /* 讓網頁內容由上至下垂直排列 */
-            align-items: center;          /* 水平居中 */
-            justify-content: flex-start;  /* 從最上方開始排列 */
-            min-height: 100vh;            /* 確保網頁高度至少撐滿整個螢幕 */
-            margin: 0; 
-            padding: 40px 20px;           /* 網頁四周的留白 */
-            box-sizing: border-box;
-        }
-
-        /* 【主版面雙欄網格】在電腦版畫面上，將內容切分為左右 1:1 的兩個區塊 */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 左右各佔一半寬度 */
-            gap: 30px;                    /* 左右區塊之間的間距 */
-            max-width: 1000px;            /* 網頁最大總寬度 */
-            width: 100%;                  /* 在小螢幕時自動縮小 */
-            box-sizing: border-box;
-            align-items: stretch;         /* 關鍵：強制讓左右兩欄的高度保持完美一致 */
-            margin-bottom: 30px;          /* 與下方頁尾的距離 */
-        }
-
-        /* 【大卡片外觀】白色底座、圓角與微陰影，套用在工具箱與遊戲專區 */
-        .box-card {
-            background: white;
-            padding: 35px;
-            border-radius: 20px;          /* 圓角弧度 */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.04); /* 微弱的現代感陰影 */
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;       /* 卡片內部內容由上至下排列 */
-            justify-content: flex-start;
-        }
-
-        /* 【大區塊標題】工具箱與遊戲專區的 H1, H2 標題樣式 */
-        h1, h2 { 
-            color: #1f2937; 
-            font-size: 22px; 
-            margin-top: 0; 
-            margin-bottom: 25px; 
-            border-bottom: 2px solid #e2e8f0; /* 標題下方的灰色裝飾細線 */
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;                     /* 圖示與文字之間的距離 */
-        }
-        
-        /* 【藍色按鈕樣式】網頁內所有藍色超連結按鈕的通用外觀 */
-        .btn-link { 
-            display: block; 
-            text-align: center;           /* 文字居中 */
-            padding: 16px; 
-            margin: 10px 0;               /* 按鈕之間的上下上下外距 */
-            background: #2563eb;          /* 亮藍色背景 */
-            color: white; 
-            text-decoration: none;        /* 移除超連結底線 */
-            border-radius: 12px;          /* 按鈕圓角 */
-            font-weight: bold; 
-            font-size: 15px;
-            transition: 0.3s;             /* 動態變化的延伸時間（讓懸停動畫更平滑） */
-            box-sizing: border-box;
-        }
-        /* 按鈕滑鼠懸停（Hover）效果：顏色變深並向上微浮 3 像素 */
-        .btn-link:hover { background: #1d4ed8; transform: translateY(-3px); }
-        
-        /* 【內部小遊戲卡片】包覆在遊戲簡介外面的淺灰色裝飾框 */
-        .inner-game {
-            background: #f8fafc;          /* 淺灰色底 */
-            border: 1px solid #e2e8f0;    /* 細緻的邊框 */
-            border-radius: 12px;
-            padding: 18px;
-            margin-top: 5px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #1f2937;
+            margin: 0;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
-            height: 100%;                 /* 撐滿右邊大卡片剩餘的高度 */
-            justify-content: space-between; /* 讓簡介在上方，按鈕貼在最下方 */
+            align-items: center;
         }
 
-        /* 【精簡頁尾】位於網頁最底部的單純文字細橫條 */
-        .info-footer {
-            max-width: 1000px;
+        /* 三欄網格佈局：調整比例，讓右側欄位瘦一點 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr; /* 左與中較寬 (1.5)，右側較窄 (1) */
+            gap: 24px;
+            max-width: 1200px; 
             width: 100%;
-            background: #ffffff;
-            border-left: 5px solid #2563eb; /* 左側的藍色裝飾粗線，與按鈕呼應 */
-            border-radius: 8px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            box-sizing: border-box;
-            display: flex;
-            justify-content: flex-end;      /* 讓版權宣告文字精準靠右對齊 */
-            align-items: center;            /* 垂直置中對齊 */
         }
 
-        /* 【📱 RWD 手機版自適應優化】當螢幕寬度小於 768px 時自動觸發 */
+        /* 響應式設計：平板轉雙欄，手機轉單欄 */
+        @media (max-width: 1024px) {
+            .main-container {
+                /* 平板狀態下，將右側欄位放到下方，或維持雙欄 */
+                grid-template-columns: 1fr 1fr;
+            }
+        }
         @media (max-width: 768px) {
-            .main-layout {
-                grid-template-columns: 1fr; /* 左右雙欄自動變成單欄上下排列 */
-                gap: 20px;
+            .main-container {
+                grid-template-columns: 1fr;
             }
-            .info-footer {
-                justify-content: center;    /* 手機版上讓版權文字居中，更美觀 */
-            }
+        }
+
+        /* 卡片共用樣式 */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: #1f2937;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 按鈕共用樣式 */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover { transform: translateY(-2px); }
+        .btn-blue { background: #2563eb; color: white; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .btn-green { background: #10b981; color: white; }
+        .btn-green:hover { background: #059669; }
+        .btn-orange { background: #ea580c; color: white; }
+        .btn-orange:hover { background: #c2410c; }
+        .btn-bordered { border: 2px solid #1f2937; color: #1f2937; background: transparent; }
+        .btn-bordered:hover { background: #f3f4f6; }
+
+        /* 日曆專用樣式 */
+        .calendar-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #374151;
+            font-size: 1.1rem;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .calendar-day-name {
+            font-weight: bold;
+            color: #6b7280;
+            font-size: 0.9rem;
+            padding-bottom: 8px;
+        }
+        .calendar-date {
+            padding: 6px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        .calendar-date.today {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-layout">
+    <div class="main-container">
+        
+        <!-- ================= 左側欄 ================= -->
+        <div class="col">
+            <!-- 1. MakeCode 工具箱 -->
+            <div class="card">
+                <h2>🛠 MakeCode 工具箱</h2>
+                <a href="#" class="btn btn-blue">🖼 圖像點陣化轉換器 (Pro)</a>
+                <a href="#" class="btn btn-blue">🎵 MIDI ➔ MakeCode 轉碼器</a>
+            </div>
 
-        <div class="box-card">
-            <h1>🛠️ MakeCode 工具箱</h1>
-            <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
-                <a href="converter/" class="btn-link">🖼️ 圖像點陣化轉換器 (Pro)</a>
-                <a href="midi-tool/" class="btn-link">🎵 MIDI ➔ MakeCode 轉碼器</a>
-                <a
-                    href="https://competition-radar-tw.sunnytsai63.chatgpt.site/"
-                    class="btn-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    🏆 競賽情報雷達
-                </a>
+            <!-- 2. 情報與專區 -->
+            <div class="card">
+                <h2>📢 情報與專欄</h2>
+                <a href="#" class="btn btn-bordered">🏆 競賽情報雷達</a>
+                <a href="#" class="btn btn-orange">📰 進入週報專區</a>
             </div>
         </div>
 
-        <div class="box-card">
-            <h2>🎮 遊戲 (Games)</h2>
-            <div class="inner-game">
-                <div>
-                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px;">《演化論—物種起源 v3.1》</h3>
-                    <p style="color: #64748b; font-size: 13px; margin: 0; line-height: 1.5;">
-                        遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生意昂然，抑或殺機四伏？
+        <!-- ================= 中間欄 ================= -->
+        <div class="col">
+            <!-- 1. 遊戲區塊 -->
+            <div class="card">
+                <h2>🎮 遊戲 (Games)</h2>
+                <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 1.1rem;">《演化論—物種起源 v3.1》</h3>
+                    <p style="font-size: 0.9rem; color: #4b5563; line-height: 1.5; margin: 0;">
+                        遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生機盎然，抑或殺機四伏？
                     </p>
                 </div>
-                    <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" class="btn-link" style="margin-bottom: 0;">
-                        開始玩遊戲 🕹️
-                    </a>
-                    <a href="game-guide.html" class="btn-link" style="margin: 5px 0; background: #10b981;">
-                        遊戲說明 📖
-                    </a>
+                <a href="#" class="btn btn-blue">開始玩遊戲 🕹</a>
+                <a href="#" class="btn btn-green">遊戲說明 📖</a>
             </div>
         </div>
 
-        <a href="weekly-report.html" class="btn-link" style="margin: 5px 0; background: #ea580c;">
-            📰 進入週報專區
-        </a>
+        <!-- ================= 右側欄 (較瘦) ================= -->
+        <div class="col">
+            <!-- 1. 自介區塊 -->
+            <div class="card">
+                <h2>👋 關於我</h2>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <!-- 大頭貼佔位區 -->
+                    <div style="width: 70px; height: 70px; background: #e2e8f0; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 28px;">👨‍🏫</div>
+                </div>
+                <p style="font-size: 0.9rem; color: #4b5563; line-height: 1.6; margin: 0;">
+                    你好！我是<strong>松翰</strong>。<br>
+                    致力於 STEAM 教育、程式設計與創客教學。這裡是我收集各種實用小工具、遊戲專案與課程紀錄的秘密基地。
+                </p>
+            </div>
+
+            <!-- 2. 日曆區塊 -->
+            <div class="card">
+                <h2>📅 日曆小工具</h2>
+                <div class="calendar-header" id="month-year"></div>
+                <div class="calendar-grid" id="calendar-body">
+                    <div class="calendar-day-name">日</div>
+                    <div class="calendar-day-name">一</div>
+                    <div class="calendar-day-name">二</div>
+                    <div class="calendar-day-name">三</div>
+                    <div class="calendar-day-name">四</div>
+                    <div class="calendar-day-name">五</div>
+                    <div class="calendar-day-name">六</div>
+                </div>
+            </div>
+        </div>
 
     </div>
-    <footer class="info-footer">
-        <div style="font-size: 12px; color: #9ca3af; font-weight: 500;">SunnyTsai-Tools © 2026</div>
-    </footer>
 
+    <!-- 底部版權宣告 -->
+    <div style="width: 100%; max-width: 1200px; background: white; padding: 15px 25px; border-radius: 12px; margin-top: 10px; text-align: right; color: #9ca3af; font-size: 14px; box-sizing: border-box;">
+        SunnyTsai-Tools © 2026
+    </div>
+
+    <!-- 日曆自動生成腳本 -->
+    <script>
+        function generateCalendar() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const currentDate = today.getDate();
+
+            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+            document.getElementById("month-year").innerText = `${currentYear} 年 ${monthNames[currentMonth]}`;
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const calendarBody = document.getElementById("calendar-body");
+
+            for (let i = 0; i < firstDay; i++) {
+                let emptyDiv = document.createElement("div");
+                calendarBody.appendChild(emptyDiv);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                let dateDiv = document.createElement("div");
+                dateDiv.classList.add("calendar-date");
+                dateDiv.innerText = day;
+                
+                if (day === currentDate && today.getMonth() === currentMonth && today.getFullYear() === currentYear) {
+                    dateDiv.classList.add("today");
+                }
+                calendarBody.appendChild(dateDiv);
+            }
+        }
+        
+        window.onload = generateCalendar;
+    </script>
 </body>
 </html>
