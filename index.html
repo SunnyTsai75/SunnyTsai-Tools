@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SunnyTsai-Tools 首頁</title>
+    <title>🦁 鬆松的開發基地</title>
+    <meta property="og:title" content="🦁 鬆松的開發基地" />
+    <meta property="og:description" content="歡迎來到鬆松的開發基地！" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sunnytsai75.github.io/SunnyTsai-Tools/" />
+    
     <style>
+        /* 全域基礎排版 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f0f2f5;
@@ -19,7 +25,7 @@
         /* 三欄網格佈局：調整比例，讓右側欄位瘦一點 */
         .main-container {
             display: grid;
-            grid-template-columns: 2fr 2fr 1fr; /* 左與中較寬 (1.5)，右側較窄 (1) */
+            grid-template-columns: 1.5fr 1.5fr 1fr; /* 左與中較寬 (1.5)，右側較窄 (1) */
             gap: 24px;
             max-width: 1200px; 
             width: 100%;
@@ -28,7 +34,6 @@
         /* 響應式設計：平板轉雙欄，手機轉單欄 */
         @media (max-width: 1024px) {
             .main-container {
-                /* 平板狀態下，將右側欄位放到下方，或維持雙欄 */
                 grid-template-columns: 1fr 1fr;
             }
         }
@@ -128,15 +133,16 @@
             <!-- 1. MakeCode 工具箱 -->
             <div class="card">
                 <h2>🛠 MakeCode 工具箱</h2>
-                <a href="#" class="btn btn-blue">🖼 圖像點陣化轉換器 (Pro)</a>
-                <a href="#" class="btn btn-blue">🎵 MIDI ➔ MakeCode 轉碼器</a>
+                <a href="converter/" class="btn btn-blue">🖼 圖像點陣化轉換器 (Pro)</a>
+                <a href="midi-tool/" class="btn btn-blue">🎵 MIDI ➔ MakeCode 轉碼器</a>
             </div>
 
             <!-- 2. 情報與專區 -->
             <div class="card">
                 <h2>📢 情報與專欄</h2>
-                <a href="#" class="btn btn-bordered">🏆 競賽情報雷達</a>
-                <a href="#" class="btn btn-orange">📰 進入週報專區</a>
+                <!-- 外部連結加入 target="_blank" 在新分頁開啟 -->
+                <a href="https://competition-radar-tw.sunnytsai63.chatgpt.site/" target="_blank" rel="noopener noreferrer" class="btn btn-bordered">🏆 競賽情報雷達</a>
+                <a href="weekly-report.html" class="btn btn-orange">📰 進入週報專區</a>
             </div>
         </div>
 
@@ -151,8 +157,8 @@
                         遊戲簡介：在遊戲中，玩家扮演物種演化的推手，培養自己的生物族群，發展各樣的性狀。玩家將在遊戲中體驗到真實的自然生態，而這個世界會是生機盎然，抑或殺機四伏？
                     </p>
                 </div>
-                <a href="#" class="btn btn-blue">開始玩遊戲 🕹</a>
-                <a href="#" class="btn btn-green">遊戲說明 📖</a>
+                <a href="https://ais-pre-klzwe37lysoj3kgcq67jro-587308218899.asia-northeast1.run.app" target="_blank" rel="noopener noreferrer" class="btn btn-blue">開始玩遊戲 🕹</a>
+                <a href="game-guide.html" class="btn btn-green">遊戲說明 📖</a>
             </div>
         </div>
 
