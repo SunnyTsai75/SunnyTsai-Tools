@@ -48,12 +48,19 @@
             transform: translateY(-2px);
         }
         
-        h3 { 
+        summary { 
             color: #ea580c; 
             border-bottom: 2px solid #fdba74; 
             padding-bottom: 10px; 
             margin-top: 0; 
             font-size: 1.3rem; 
+            font-weight: bold;
+            cursor: pointer; /* 滑鼠移過去會變成點擊的手勢 */
+            user-select: none; /* 防止連點時不小心反白文字 */
+        }
+        
+        .links-container {
+            margin-top: 15px; /* 讓展開後的連結與標題保持適當間距 */
         }
         
         .week-link { display: block; padding: 15px 20px; 
@@ -103,13 +110,15 @@
 
 
     <!-- 10月份區塊 -->
-    <div class="month-group">
-        <h3>2026 年 10 月</h3>
-        <a href="./reports/Asong_Weekly_Report_20261024.html" class="week-link" target="_blank">🎃 10月下旬整合特輯 (10/18 - 10/24)</a>
-        <a href="./reports/Asong_Weekly_Report_20261017.html" class="week-link" target="_blank">⚡️ 10月中旬重點特輯 (10/11 - 10/17)</a>
-        <a href="./reports/Asong_Weekly_Report_20261010.html" class="week-link" target="_blank">🤖 10月上旬重點特輯 (10/04 - 10/10)</a>
-    </div>
-
+<!-- 10月份區塊 -->
+    <details class="month-group" open>
+        <summary>2026 年 10 月</summary>
+        <div class="links-container">
+            <a href="./reports/Asong_Weekly_Report_20261024.html" class="week-link" target="_blank">🎃 10月下旬整合特輯 (10/18 - 10/24)</a>
+            <a href="./reports/Asong_Weekly_Report_20261017.html" class="week-link" target="_blank">⚡️ 10月中旬重點特輯 (10/11 - 10/17)</a>
+            <a href="./reports/Asong_Weekly_Report_20261010.html" class="week-link" target="_blank">🤖 10月上旬重點特輯 (10/04 - 10/10)</a>
+        </div>
+    </details>
     <!-- 未來你可以直接複製上面的 <div class="month-group"> 區塊，改成 11 月份繼續往下擴充 -->
 </body>
 </html>
