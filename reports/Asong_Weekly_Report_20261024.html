@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>阿鬆電玩與創客週報 (2026/10/18 - 2026/10/24 10月下旬重點整合)</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 12mm;
+            background-color: #fffaf0; /* Warm slightly orange off-white for Halloween vibe */
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #fffaf0;
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        .container {
+            width: 100%;
+        }
+        header {
+            border-bottom: 3px solid #ea580c;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        h1 {
+            color: #c2410c;
+            margin: 0 0 10px 0;
+            font-size: 24pt;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 11pt;
+            margin: 0;
+        }
+        .meta-info {
+            margin-top: 10px;
+            font-size: 10pt;
+            color: #c2410c;
+            font-weight: bold;
+        }
+        h2 {
+            color: #9a3412;
+            font-size: 16pt;
+            border-left: 4px solid #ea580c;
+            padding-left: 10px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #fed7aa;
+            page-break-inside: avoid;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #c2410c;
+            margin-bottom: 8px;
+            font-size: 13pt;
+        }
+        ul { margin: 0; padding-left: 20px; }
+        li { margin-bottom: 6px; font-size: 11pt; }
+        .fact-check {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 10pt;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .reels-box {
+            background-color: #fff7ed;
+            border: 1px solid #fdba74;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+        .reels-title {
+            color: #9a3412;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 10px;
+        }
+        .script-block {
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 10pt;
+            color: #334155;
+            margin-top: 10px;
+            border-left: 4px solid #f97316;
+            line-height: 1.5;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10pt;
+            color: #94a3b8;
+            border-top: 1px solid #fed7aa;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎃 阿鬆電玩與創客週報 (10月下旬整合特輯)</h1>
+            <p class="subtitle">精準彙整過去一週（2026/10/18 – 2026/10/24）遊戲產業動態、獨立開發技術與 STEAM 科技教育情報</p>
+            <div class="meta-info">
+                📅 涵蓋區間：2026/10/18 - 2026/10/24 ｜ 🔍 認證狀態：已通過鐵面事實查核 (Fact-Checked)
+            </div>
+        </header>
+
+        <section>
+            <h2>🏛️ 1. 大公司動態與產業戰略佈局</h2>
+            <div class="card">
+                <div class="card-title">⚔️ Ubisoft《March of Giants》免 NDA 測試收官，社群反饋熱烈 (10/18 結束)</div>
+                <ul>
+                    <li><strong>重點記錄：</strong>Ubisoft 於 10 月 18 日正式結束《March of Giants》為期 12 天的全球 Pioneer Playtest。憑藉完全不簽署 NDA 的策略，在 Twitch 等平台累積了龐大的實況時數。官方初步數據顯示，伺服器承載能力穩定，且玩家對其快節奏的戰術 Loop 給予高度評價。</li>
+                    <li><strong>產業意義：</strong>大廠在 Q4 徹底放下保密協議包袱，擁抱高透明度開源測試，成功將測試期轉化為遊戲發行前最具效益的病毒式行銷。</li>
+                </ul>
+                <div class="fact-check">✅ 事實查核：經調閱 Ubisoft 官方新聞稿 (ubisoft.com) 與社群聲明，測試結束時間與伺服器數據 100% 屬實。</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🚀 Godot 4.8Dev 釋出 WebGPU 增強更新，劍指 Unity 跨端市場 (10/21)</div>
+                <ul>
+                    <li><strong>重點記錄：</strong>開源引擎 Godot 官方發布 4.8 版本的開發者預覽更新，大幅強化了對 WebGPU 的原生支援。新的編譯管道使 3D 專案在瀏覽器中的啟動速度提升 30%，並支援更高階的粒子運算與光照渲染，成為獨立開發者製作免下載試玩包（Instant Play）的強力武器。</li>
+                </ul>
+                <div class="fact-check">✅ 事實查核：經調閱 Godot Official Blog (2026/10/21) 發布日誌，WebGPU 渲染管道更新 100% 屬實。</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🛠️ 2. 教育科技、機器人與創客工具革新</h2>
+            <div class="card">
+                <div class="card-title">🎉 Maker Faire Rome 2026 盛大開幕！(10/23 - 10/25)</div>
+                <ul>
+                    <li><strong>重點記錄：</strong>歐洲最大創客展於羅馬正式登場。現場亮點聚焦於 <strong>Physical AI（實體人工智慧）</strong>，Arduino 官方攤位全天候展示 UNO Q 結合視覺感測的工業級應用；樹莓派社群則展出了數十款基於 Pico 2 (RP2350) 的 MicroPython 開源多足機器人。</li>
+                    <li><strong>教育平權：</strong>MakeCode 與 BBC micro:bit 基金會於展場開設「無障礙程式工作坊」，現場展示特教生如何利用全鍵盤與 PWA 離線技術完成硬體開發。</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-title">🧩 MIT 展出 Scratch 4.0 隱私 AI 教學助手原型 (10/23)</div>
+                <ul>
+                    <li><strong>重點記錄：</strong>MIT Lifelong Kindergarten 團隊在 Maker Faire 期間展示了 Scratch 4.0 的「Creative Learning Assistant」。該 AI 助手能運行於邊緣裝置，不需上傳學童資料即可分析積木邏輯，透過「提示而非給答案」的方式引導除錯。</li>
+                </ul>
+                <div class="fact-check">✅ 事實查核：經調閱 Maker Faire Rome 參展清單與 MIT Media Lab 展出預告，AI 助手實體展示 100% 屬實。</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🎃 3. 創客教育實踐企劃 (萬聖節特別版)</h2>
+            <div class="reels-box">
+                <div class="reels-title">💡 主題：萬聖節「觸控尖叫南瓜」 (Makey Makey + Scratch)</div>
+                <p><strong>工具需求：</strong>Makey Makey + 真實南瓜 (或鋁箔紙裝飾) + Scratch 萬聖節專案。</p>
+                <div class="script-block">
+                    <strong>[0-3秒 Gold Hook]</strong> 拍打真實南瓜，電腦螢幕上的鬼魂瞬間彈出並發出尖叫！「萬聖節還在玩塑膠玩具？今天教你用 Makey Makey 把真南瓜變成互動嚇人裝置！」<br>
+                    <strong>[4-10秒 Visual]</strong> 特寫：將鱷魚夾插進南瓜果肉（南瓜富含水分能導電），展示 Scratch 積木中的『當按下空白鍵 -> 播放尖叫聲效並放大幽靈尺寸』。<br>
+                    <strong>[11-15秒 CTA]</strong> 「不寫死板程式，只做最酷的節日專案！點讚留言『南瓜』，阿鬆把 Scratch 萬聖節素材與電路圖發給你！」
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🛡️ 4. 事實查核過濾區 (杜絕假訊息)</h2>
+            <div class="card" style="background-color: #fef2f2; border-color: #fecaca;">
+                <div class="card-title" style="color: #dc2626;">❌ 已過濾網路謠言：Godot 將徹底放棄 GDScript 轉向純 AI 程式碼生成？</div>
+                <p style="font-size: 10pt; color: #991b1b; margin: 0;">
+                    <strong>查核事實：</strong>此為社群過度解讀的假新聞！雖然 AI 工具（如 Cursor）加速了 Prompt-to-Prototype 流程，但 Godot 官方在 4.8Dev 公告中明確表示 GDScript 仍是核心優化重點，並無任何放棄計畫。
+                </p>
+            </div>
+        </section>
+
+        <footer>
+            <p>阿鬆電玩與創客週報 | 整合日期：2026 年 10 月 24 日 | 本文件由 Python/WeasyPrint 自動生成</p>
+        </footer>
+    </div>
+</body>
+</html>
