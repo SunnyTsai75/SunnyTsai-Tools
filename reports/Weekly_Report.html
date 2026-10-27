@@ -2,24 +2,29 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>阿鬆創客週報專區</title>
+    <title>阿鬆創客週報總覽</title>
     <style>
-        body { font-family: sans-serif; background: #f8fafc; color: #1e293b; max-width: 800px; margin: 40px auto; padding: 0 20px; }
-        .back-btn { text-decoration: none; color: #2563eb; font-weight: bold; margin-bottom: 20px; display: inline-block; }
-        .report-item { display: block; background: white; padding: 20px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; transition: 0.2s; }
-        .report-item:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #ea580c; }
-        .title { color: #ea580c; font-size: 1.2rem; font-weight: bold; margin: 0 0 5px 0; }
-        .date { color: #64748b; font-size: 0.9rem; margin: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; max-width: 800px; margin: 40px auto; padding: 20px; }
+        .month-group { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        h3 { color: #ea580c; border-bottom: 2px solid #fdba74; padding-bottom: 10px; margin-top: 0; font-size: 1.3rem; }
+        .week-link { display: block; padding: 15px 20px; margin: 12px 0; background: #fff7ed; text-decoration: none; color: #9a3412; border-radius: 8px; font-weight: bold; transition: all 0.2s ease; border: 1px solid #ffedd5; }
+        .week-link:hover { background: #ea580c; color: white; transform: translateX(5px); box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3); }
+        .back-btn { color: #2563eb; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+        .back-btn:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-btn">← 返回首頁</a>
-    <h2>📰 阿鬆創客週報專區</h2>
-    
-    <!-- 這裡新增每一期的連結，target="_blank" 會在新分頁開啟週報 -->
-    <a href="./reports/Asong_Weekly_Report_20261024.html" class="report-item" target="_blank">
-        <p class="title">🎃 10月下旬整合特輯 (萬聖節特別版)</p>
-        <p class="date">發布日期：2026/10/24</p>
-    </a>
+    <h2 style="color: #0f172a; margin-bottom: 30px;">📰 歷期週報總覽</h2>
+
+    <!-- 10月份區塊 -->
+    <div class="month-group">
+        <h3>2026 年 10 月</h3>
+        <a href="./reports/Asong_Weekly_Report_20261024.html" class="week-link" target="_blank">🎃 10月下旬整合特輯 (10/18 - 10/24)</a>
+        <a href="./reports/Asong_Weekly_Report_20261017.html" class="week-link" target="_blank">⚡️ 10月中旬重點特輯 (10/11 - 10/17)</a>
+        <a href="./reports/Asong_Weekly_Report_20261010.html" class="week-link" target="_blank">🤖 10月上旬重點特輯 (10/04 - 10/10)</a>
+    </div>
+
+    <!-- 未來你可以直接複製上面的 <div class="month-group"> 區塊，改成 11 月份繼續往下擴充 -->
 </body>
 </html>
