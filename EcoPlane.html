@@ -124,6 +124,12 @@
             <p>環保效能加成: <span id="end-eco" class="font-bold text-green-600 text-2xl">0</span>%</p>
         </div>
         <h3 class="text-4xl font-black text-blue-600 border-t-2 border-gray-200 pt-6">最終得分: <span id="end-score">0</span></h3>
+        <!-- ============ 這裡開始是新增的排行榜 UI ============ -->
+        <div class="mt-6 bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200 text-left">
+            <h4 class="font-bold text-lg text-yellow-800 border-b border-yellow-200 pb-2 mb-2">🏆 本機英雄榜 (Top 5)</h4>
+            <ol id="lb-list" class="list-decimal list-inside text-gray-700 space-y-1 font-bold"></ol>
+        </div>
+        <!-- =================================================== -->
         <button onclick="location.reload()" class="mt-8 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg w-full transition-transform hover:scale-105">🔧 回到機庫重新設計</button>
     </div>
 
