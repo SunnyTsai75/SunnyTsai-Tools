@@ -246,9 +246,36 @@
         function gameOver() {
             isPlaying = false;
             document.getElementById('gameOver').classList.remove('hidden');
+            
+            // 計算最終分數
+            let finalScore = Math.floor(distance * (finalStats.eco / 100));
             document.getElementById('end-dist').innerText = Math.floor(distance);
             document.getElementById('end-eco').innerText = finalStats.eco;
-            document.getElementById('end-score').innerText = Math.floor(distance * (finalStats.eco / 100));
+            document.getElementById('end-score').innerText = finalScore;
+
+            // --- 排行榜儲存邏輯 (LocalStorage) ---
+            // 讀取舊資料，若無則預設為空陣列
+            let lb = JSON.parse(localStorage.getItem('ecoPlaneLB')) || [];
+            
+            // 稍微延遲一下跳出輸入框，讓玩家先看到畫面
+            setTimeout(() => {
+                if(finalScore > 0) {
+                    let playerName = prompt(`🎉 恭喜獲得 ${finalScore} 分！\n請輸入你的大名來記錄成績：`, "環保飛行員");
+                    if(playerName) {
+                        lb.push({ name: playerName, score: finalScore });
+                        lb.sort((a, b) => b.score - a.score); // 依分數由高到低排序
+                        lb = lb.slice(0, 5); // 只保留前 5 名
+                        localStorage.setItem('ecoPlaneLB', JSON.stringify(lb)); // 存回瀏覽器
+                    }
+                }
+                
+                // 更新排行榜畫面
+                let lbList = document.getElementById('lb-list');
+                lbList.innerHTML = '';
+                lb.forEach((entry) => {
+                    lbList.innerHTML += `<li><span class="text-gray-900">${entry.name}</span> : <span class="text-blue-600">${entry.score}</span> 分</li>`;
+                });
+            }, 500); // 延遲 0.5 秒跳出
         }
 
         function drawCustomPlane(ctx, config) {
