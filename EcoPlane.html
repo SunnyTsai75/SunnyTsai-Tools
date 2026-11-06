@@ -1,536 +1,313 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>環境淨化飛行 V4 - 飛鳥危機與空白鍵支援</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #87CEEB; user-select: none; }
-        #gameCanvas { display: none; width: 100vw; height: 100vh; }
-        .stat-bar { transition: width 0.3s ease, background-color 0.3s ease; }
-        #workshop { background: rgba(255, 255, 255, 0.95); max-height: 95vh; overflow-y: auto; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>環境淨化飛行 V5</title>
+<style>
+:root{--bg:#fbf8f0;--fg:#1f2937;--mut:#6b7280;--card:#eef2e6;--bd:#16a34a;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1b2430;--fg:#e5e7eb;--mut:#9ca3af;--card:#26313f}}
+:root[data-theme=dark]{--bg:#1b2430;--fg:#e5e7eb;--mut:#9ca3af;--card:#26313f}
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:#87ceeb;user-select:none;color:var(--fg)}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:none}
+.hidden{display:none!important}
+.panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:92%;max-width:900px;max-height:94vh;overflow:auto;background:var(--bg);border:4px solid var(--bd);border-radius:20px;padding:20px;z-index:5}
+#workshop{display:flex;flex-wrap:wrap;gap:20px}
+#workshop>div{flex:1 1 280px}
+.card{background:var(--card);padding:16px;border-radius:14px}
+h1{color:#15803d;font-size:1.5rem;margin:0 0 8px}
+h2{font-size:1.1rem;margin:0 0 6px}
+.mut{color:var(--mut);font-size:.85rem}
+label{font-weight:700;display:block}
+select,input{width:100%;padding:8px;margin:4px 0 14px;border-radius:8px;background:var(--card);color:var(--fg);border:1px solid #9ca3af;font:inherit}
+.row{display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;margin-top:10px}
+.bar{height:10px;background:#9ca3af55;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;transition:width .3s}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;color:#fff;background:#374151}
+button.go{width:100%;background:#16a34a;font-size:1.2rem;padding:14px;margin-top:8px;border-bottom:4px solid #166534}
+#passive{margin:12px 0;font-size:.9rem;line-height:1.5}
+#hud{position:absolute;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 0;display:flex;justify-content:space-between;gap:8px;pointer-events:none;z-index:2}
+.hb{background:#ffffffe6;color:#1f2937;padding:8px 12px;border-radius:12px;font-weight:700;font-size:.9rem;line-height:1.4}
+#gameOver{text-align:center;max-width:420px;border-color:#dc2626;z-index:6}
+#gameOver h2{font-size:1.8rem;color:#dc2626}
+#lb{text-align:left;margin:6px 0 0;padding-left:22px;font-weight:700}
+</style>
 </head>
 <body>
+<div id="workshop" class="panel">
+ <div>
+  <h1>✈️ 零碳排航空實驗室</h1>
+  <p class="mut">設計你的紙飛機。穿過污染雲能淨化天空，擦過飛鳥可累積連擊，每 500 m 會進入新的天氣區域。</p>
+  <label>1️⃣ 紙材</label><select id="s0" onchange="updateStats()"></select>
+  <label>2️⃣ 機翼與形狀</label><select id="s1" onchange="updateStats()"></select>
+  <label>3️⃣ 配件與微調</label><select id="s2" onchange="updateStats()"></select>
+ </div>
+ <div class="card">
+  <h2>📊 預估數值</h2>
+  <div id="stats"></div>
+  <div id="passive"></div>
+  <p class="mut">長按滑鼠、螢幕或空白鍵爬升；放開後滑翔，下壓時會俯衝加速。按 M 可靜音。<br>右側警示圖示的字代表鳥種：雀、雁（群）、鷹（會追蹤）、椋（群，找縫隙穿過）、蝠（夜間）、鴿（綠色，友善，碰到可補能量）。</p>
+  <button class="go" onclick="startGame()">🚀 摺紙放飛</button>
+ </div>
+</div>
+<canvas id="gameCanvas"></canvas>
+<div id="hud" class="hidden">
+ <div class="hb">飛行距離 <b id="u-d">0</b> m<br><small>分數 <b id="u-s">0</b> <span id="u-c"></span></small></div>
+ <div class="hb" style="text-align:center"><small id="u-z">晴空</small><div id="u-w">--</div></div>
+ <div class="hb" style="width:170px">⚡ 能量 <span id="u-et">100%</span><div class="bar"><i id="u-e" style="background:#facc15"></i></div>🌍 淨化 <span id="u-ct">35%</span><div class="bar"><i id="u-cl" style="background:#22c55e"></i></div><small id="u-sh"></small></div>
+</div>
+<div id="gameOver" class="panel hidden">
+ <h2 id="fail">飛行結束</h2>
+ <p>飛行距離 <b id="e-d">0</b> m ・ 淨化污染雲 <b id="e-p">0</b> 朵 ・ 最高連擊 <b id="e-c">0</b></p>
+ <h3 style="font-size:1.8rem;margin:8px 0;color:#2563eb">最終得分 <span id="e-s">0</span></h3>
+ <div id="nmrow"><input id="nm" maxlength="10" value="環保飛行員"><button style="width:100%" onclick="saveScore()">儲存成績</button></div>
+ <div class="card" style="margin:12px 0;text-align:left"><b>🏆 本機英雄榜 (前 5 名)</b><ol id="lb"></ol></div>
+ <button class="go" onclick="startGame()">🔁 再飛一次</button>
+ <button style="width:100%;margin-top:8px" onclick="toHangar()">🔧 回到機庫</button>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const mN=['廢報紙 (灰/輕盈/易飄)','回收厚紙板 (穩重/抗風)','A4 影印紙 (標準)','農業廢棄物再生紙 (極環保)','塑膠塗層紙 (極不環保)','植物纖維薄紙 (極輕)'];
+const sN=['寬翼滑翔型','尖頭破風型','圓頭平直型','不對稱亂摺','短胖特技型','翼端上翹'];
+const aN=['無 (保持原狀)','機頭夾迴紋針','尾部加重','環保植物蠟塗層','化學膠帶補強','尾翼精準上折'];
+const materials=[[30,60,40,30,95],[80,40,60,80,70],[50,50,50,50,60],[60,40,50,60,100],[40,70,90,70,10],[20,80,30,20,100]];
+const matColors=[['#d1d5db','#9ca3af','#6b7280'],['#d2b48c','#a0522d','#8b4513'],['#ffffff','#e5e7eb','#9ca3af'],['#fef08a','#ca8a04','#a16207'],['#bae6fd','#38bdf8','#0ea5e9'],['#bbf7d0','#4ade80','#16a34a']];
+const shapes=[[20,90,30,60,50],[70,30,90,40,50],[50,50,50,80,50],[50,40,40,10,50],[30,70,70,30,50],[40,80,40,90,50]];
+const addons=[[50,50,50,50,50],[80,40,60,90,40],[90,30,40,20,50],[40,70,70,60,70],[50,80,80,80,0],[50,90,40,60,50]];
+const mods=[{d:'無特殊效果'},{d:'俯衝加速 +50%',dive:.5},{d:'爬升更有力，但放開後下沉較快',lift:.2,sink:.15},{d:'滑翔阻力低，下沉更慢',sink:-.25},{d:'可擋一次鳥擊，但尾跡會污染天空',shield:1,trail:1},{d:'爬升時更省能量',eff:.4}];
+const zones=[{n:'☀️ 晴空',w:10,b:.012,d:.4,smog:0,a:0},{n:'⛈️ 暴風雨',w:16,b:.014,d:.5,smog:.3,a:.35},{n:'🏭 霧霾城市',w:11,b:.015,d:.7,smog:1.2,a:.2},{n:'🌌 極光夜空',w:12,b:.02,d:.35,smog:0,a:.5,night:1}];
+[[mN,'s0',2],[sN,'s1',0],[aN,'s2',0]].forEach(([a,id,v])=>{$(id).innerHTML=a.map((t,i)=>`<option value="${i}">${t}</option>`).join('');$(id).value=v});
+const SK=[['weight','重力與慣性','#3b82f6'],['lift','升力','#22d3ee'],['speed','基礎速度','#f87171'],['stab','抗風穩定度','#a855f7'],['eco','Eco 效能（尾跡淨化力）','#22c55e']];
+$('stats').innerHTML=SK.map(k=>`<div class="row"><span>${k[1]}</span><span id="v-${k[0]}"></span></div><div class="bar"><i id="b-${k[0]}" style="background:${k[2]}"></i></div>`).join('');
+let F={weight:50,lift:50,speed:50,stab:50,eco:50},cfg={mat:2,shape:0,addon:0};
+const md=()=>mods[cfg.addon];
+function updateStats(){
+ cfg={mat:+$('s0').value,shape:+$('s1').value,addon:+$('s2').value};
+ const m=materials[cfg.mat],s=shapes[cfg.shape],a=addons[cfg.addon];
+ F.weight=m[0]*.5+s[0]*.3+a[0]*.2;F.lift=m[1]*.3+s[1]*.5+a[1]*.2;F.speed=m[2]*.4+s[2]*.5+a[2]*.1;F.stab=m[3]*.3+s[3]*.3+a[3]*.4;F.eco=m[4]*.6+a[4]*.4;
+ SK.forEach(k=>{const v=Math.max(5,Math.min(100,Math.floor(F[k[0]])));F[k[0]]=v;$('v-'+k[0]).textContent=v;$('b-'+k[0]).style.width=v+'%'});
+ $('passive').textContent='特性：'+md().d+'。尾跡：'+(F.eco>=50&&!md().trail?'🌿 會淨化天空':'💨 會污染天空');
+}
+updateStats();
 
-    <!-- 機庫設計所 (Workshop) -->
-    <div id="workshop" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-5xl rounded-2xl shadow-2xl p-8 flex flex-col md:flex-row gap-8 border-4 border-green-500 z-50">
-        
-        <div class="flex-1 space-y-6">
-            <h1 class="text-3xl font-bold text-green-700 border-b-2 border-green-200 pb-2">✈️ 零碳排航空實驗室</h1>
-            <p class="text-gray-600 text-sm">設計你的紙飛機。小心隨機出現的飛鳥，也不要飛得太高！</p>
-            
-            <div>
-                <label class="block font-bold text-gray-700 mb-2">1️⃣ 紙材 (Material)</label>
-                <select id="sel-material" class="w-full p-2 border rounded bg-gray-50 focus:ring-2 focus:ring-green-400" onchange="updateStats()">
-                    <option value="0">廢報紙 (灰/輕盈/易飄)</option>
-                    <option value="1">回收厚紙板 (牛皮色/穩重/抗風)</option>
-                    <option value="2">一般 A4 影印紙 (純白/標準)</option>
-                    <option value="3">農業廢棄物再生紙 (米黃/極環保)</option>
-                    <option value="4">塑膠塗層紙 (亮面/超極不環保)</option>
-                    <option value="5">植物纖維薄紙 (淺綠/極輕)</option>
-                </select>
-            </div>
+// ===== 引擎 =====
+const cv=$('gameCanvas'),ctx=cv.getContext('2d');
+let W,H,playing=false,pressing=false,dead=false,reason='',intro=0,last=0,slow=0,shake=0,T=0,DT=1,mute=false;
+let plane={x:0,y:0,vy:0,energy:100,rot:0},dist=0,bonus=0,clean=.35,combo=0,comboT=0,maxCombo=0,purified=0,shield=0,zoneI=0,banner=0;
+let parts=[],clouds=[],birds=[],warns=[],mts=[],wl=[],texts=[],wind=0,tw=0,wt=0;
+function resize(){cv.width=W=innerWidth;cv.height=H=innerHeight;plane.x=W*.2}
+addEventListener('resize',resize);resize();
+const score=()=>Math.floor(dist+bonus+clean*100);
+const BN={sp:'麻雀',goose:'雁群',eagle:'老鷹',star:'椋鳥群',bat:'蝙蝠',dove:'信鴿'};
+const BC={sp:['#ef4444','雀'],goose:['#d97706','雁'],eagle:['#7c2d12','鷹'],star:['#7c3aed','椋'],bat:['#a21caf','蝠'],dove:['#16a34a','鴿']};
+let inv=0;
+function newWarn(){
+ const pool=['sp','sp'];
+ if(dist>300)pool.push('goose');if(dist>600)pool.push('eagle');if(zoneI===2||dist>1200)pool.push('star');if(zoneI===3)pool.push('bat','bat');
+ const ty=Math.random()<.1?'dove':pool[Math.random()*pool.length|0],sp={goose:230,star:210}[ty]||0;
+ let y=Math.random()*(H-200)+50;if(sp)y=Math.max(sp/2+20,Math.min(H-sp/2-20,y));
+ warns.push({y,ty,sp,t:ty==='eagle'?95:sp?85:70,col:BC[ty][0],lb:BC[ty][1]});
+}
+function spawn(w){
+ const X=W+50,y=w.y,ty=w.ty,G={nm:0};
+ const B=o=>birds.push(Object.assign({x:X,y,by:y,sp:3,ph:Math.random()*6.3,r:25,sc:1,col:'#1f2937',ty,g:G},o));
+ if(ty==='sp'){const n=zoneI>0&&Math.random()<.35?2:1;for(let k=0;k<n;k++)B({x:X+k*60,y:y+k*45,by:y+k*45,sp:Math.random()*2+3.5,r:22,sc:.9})}
+ else if(ty==='goose')for(let k=0;k<6;k++){const s=k%2?1:-1,p=Math.ceil(k/2);B({x:X+p*45,y:y+s*p*36,by:y+s*p*36,sp:1.5,r:26,sc:1.3,col:'#6b7280'})}
+ else if(ty==='eagle')B({sp:4.5,r:34,sc:2.2,col:'#7c2d12',tr:45});
+ else if(ty==='star'){const gr=Math.floor(Math.random()*3);for(let c=0;c<6;c++)for(let r=0;r<5;r++)if(r!==gr&&r!==gr+1)B({x:X+c*34,y:y+(r-2)*30,by:y+(r-2)*30,cl:c,wave:1,sp:2.5,r:20,sc:.55,col:'#4c1d95'})}
+ else if(ty==='bat'){const n=Math.random()<.4?2:1;for(let k=0;k<n;k++)B({x:X+k*120,sp:3.2,r:18,sc:.9,col:'#581c87',zig:1})}
+ else B({sp:2,r:28,sc:1.1,col:'#10b981'});
+}
+function moveBird(b,fs,dt){
+ b.x-=(fs+b.sp)*dt;
+ if(b.tr>0&&b.x<W){b.tr-=dt;b.y+=Math.max(-3.2,Math.min(3.2,plane.y-b.y))*dt}
+ if(b.wave)b.y=b.by+Math.sin(T*.06+b.cl*.4)*30;
+ if(b.zig)b.y=b.by+Math.sin(T*.18+b.ph)*70;
+}
+function drawBird(b){
+ const s=b.sc,fl=Math.sin(T*(b.ty==='eagle'?.18:.3)+b.ph)*10*s,x=b.x,y=b.y;
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=b.col;ctx.fillStyle=b.col;ctx.lineWidth=Math.max(2,4*s);
+ ctx.beginPath();
+ if(b.ty==='bat'){ctx.moveTo(x-18,y-fl);ctx.lineTo(x-9,y+4);ctx.lineTo(x-4,y-3);ctx.lineTo(x,y+5);ctx.lineTo(x+4,y-3);ctx.lineTo(x+9,y+4);ctx.lineTo(x+18,y-fl)}
+ else{ctx.moveTo(x-15*s,y-fl);ctx.quadraticCurveTo(x-7*s,y-fl/2,x,y);ctx.quadraticCurveTo(x+7*s,y-fl/2,x+15*s,y-fl)}
+ ctx.stroke();
+ if(b.ty==='eagle'||b.ty==='dove'){ctx.beginPath();ctx.ellipse(x,y+1,6*s,3*s,0,0,7);ctx.fill()}
+}
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t))+')'};
+let AC;function snd(f,d=.12,t='sine',v=.07){if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+const txt=(x,y,s,c)=>texts.push({x,y,s,c,l:70});
+const burst=(x,y,c,n)=>{for(let k=0;k<n;k++)parts.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*8,l:1,dc:.03,f:3,c})};
+addEventListener('mousedown',()=>{if(playing&&!dead)pressing=true});
+addEventListener('mouseup',()=>pressing=false);
+addEventListener('touchstart',e=>{if(playing&&!dead){pressing=true;e.preventDefault()}},{passive:false});
+addEventListener('touchend',()=>pressing=false);
+addEventListener('keydown',e=>{if(e.code==='Space'&&playing&&!dead){pressing=true;e.preventDefault()}if(e.code==='KeyM')mute=!mute});
+addEventListener('keyup',e=>{if(e.code==='Space')pressing=false});
 
-            <div>
-                <label class="block font-bold text-gray-700 mb-2">2️⃣ 機翼與形狀 (Wing & Shape)</label>
-                <select id="sel-shape" class="w-full p-2 border rounded bg-gray-50 focus:ring-2 focus:ring-green-400" onchange="updateStats()">
-                    <option value="0">寬翼滑翔型 (翅膀寬大)</option>
-                    <option value="1">尖頭破風型 (機身修長銳利)</option>
-                    <option value="2">圓頭平直型 (平齊的機鼻)</option>
-                    <option value="3">不對稱亂摺 (長短腳/歪扭)</option>
-                    <option value="4">短胖特技型 (極度短小)</option>
-                    <option value="5">翼端上翹 (兩側垂直尾翼)</option>
-                </select>
-            </div>
+function startGame(){
+ $('workshop').classList.add('hidden');$('gameOver').classList.add('hidden');$('hud').classList.remove('hidden');cv.style.display='block';
+ Object.assign(plane,{x:W*.2,y:H/2,vy:0,energy:100,rot:0});
+ dist=bonus=combo=comboT=maxCombo=purified=0;clean=.35;shield=md().shield||0;zoneI=0;banner=120;T=0;dead=false;reason='飛行結束';
+ parts=[];clouds=[];birds=[];warns=[];wl=[];texts=[];wind=tw=wt=slow=shake=0;
+ mts=[];for(let i=0;i<5;i++)mts.push({x:i*W/3,h:Math.random()*200+100,w:W/2});
+ intro=70;inv=0;playing=true;pressing=false;last=performance.now();snd(520,.15);requestAnimationFrame(loop);
+}
+function toHangar(){playing=false;$('gameOver').classList.add('hidden');$('hud').classList.add('hidden');cv.style.display='none';$('workshop').classList.remove('hidden')}
+function crash(r){
+ dead=true;pressing=false;reason=r;$('fail').textContent=r;plane.vy=-6;shake=20;snd(120,.4,'sawtooth',.1);
+ for(let k=0;k<15;k++)parts.push({x:plane.x,y:plane.y,vx:(Math.random()-.5)*15,vy:(Math.random()-.5)*15,l:1,dc:.015,f:2,c:'230,230,230'});
+}
+const ld=()=>{try{return JSON.parse(localStorage.getItem('ecoPlaneLB5'))||[]}catch(e){return[]}};
+function renderLB(){const o=$('lb');o.textContent='';ld().forEach(e=>{const li=document.createElement('li');li.textContent=e.name+' : '+e.score+' 分';o.appendChild(li)})}
+function saveScore(){
+ const l=ld();l.push({name:($('nm').value.trim()||'環保飛行員').slice(0,10),score:score()});l.sort((a,b)=>b.score-a.score);
+ try{localStorage.setItem('ecoPlaneLB5',JSON.stringify(l.slice(0,5)))}catch(e){}
+ $('nmrow').classList.add('hidden');renderLB();
+}
+function over(){
+ playing=false;const s=score();
+ $('fail').textContent=reason;$('e-d').textContent=Math.floor(dist);$('e-p').textContent=purified;$('e-c').textContent=maxCombo;$('e-s').textContent=s;
+ $('nmrow').classList.toggle('hidden',s<=0);renderLB();$('gameOver').classList.remove('hidden');snd(220,.3,'triangle');
+}
 
-            <div>
-                <label class="block font-bold text-gray-700 mb-2">3️⃣ 配件與微調 (Add-ons)</label>
-                <select id="sel-addon" class="w-full p-2 border rounded bg-gray-50 focus:ring-2 focus:ring-green-400" onchange="updateStats()">
-                    <option value="0">無 (保持原狀)</option>
-                    <option value="1">機頭夾迴紋針 (金屬配重)</option>
-                    <option value="2">尾部加重 (容易後仰)</option>
-                    <option value="3">環保植物蠟塗層 (降阻力/加分)</option>
-                    <option value="4">化學膠帶補強 (防漏風但破壞外觀與環保)</option>
-                    <option value="5">尾翼精準上折 (提升靈敏度)</option>
-                </select>
-            </div>
-        </div>
+function poly(c,p){ctx.fillStyle=c;ctx.beginPath();p.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.fill()}
+function drawPlane(){
+ let n=[30,0],rw=[-20,-15],lw=[-20,15],t=[-10,0];
+ switch(cfg.shape){case 0:rw=[-15,-28];lw=[-15,28];t=[-5,0];break;case 1:n=[45,0];rw=[-25,-10];lw=[-25,10];break;case 2:n=[15,0];break;case 3:rw=[-5,-8];lw=[-25,22];t=[-12,4];break;case 4:n=[15,0];rw=[-10,-15];lw=[-10,15]}
+ const c=matColors[cfg.mat],f=cfg.shape===2;
+ poly(c[0],f?[[n[0],-4],[n[0],0],rw,t]:[n,rw,t]);
+ poly(c[1],f?[[n[0],4],[n[0],0],lw,t]:[n,lw,t]);
+ poly(c[2],[f?[n[0],0]:n,[t[0]-10,3],t]);
+ if(cfg.shape===5){poly(c[2],[rw,[rw[0]+5,rw[1]-8],[rw[0]-5,rw[1]]]);poly(c[2],[lw,[lw[0]+5,lw[1]+8],[lw[0]-5,lw[1]]])}
+ if(cfg.addon===1){ctx.strokeStyle='#9ca3af';ctx.lineWidth=2;ctx.beginPath();ctx.arc(n[0]-3,0,3,0,7);ctx.stroke()}
+ if(cfg.addon===4){ctx.fillStyle='rgba(210,180,140,.7)';ctx.fillRect(0,-10,8,20)}
+ if(cfg.mat===0){ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(15,-2);ctx.moveTo(-10,5);ctx.lineTo(5,8);ctx.stroke()}
+}
+function bg(s){
+ const z=zones[zoneI],g=ctx.createLinearGradient(0,0,0,H);
+ g.addColorStop(0,mix('#69645a','#53a0f7',clean));g.addColorStop(1,mix('#a6a195','#c0f7db',clean));
+ ctx.fillStyle=g;ctx.fillRect(-30,-30,W+60,H+60);
+ if(z.a){ctx.fillStyle='rgba(10,15,45,'+z.a+')';ctx.fillRect(-30,-30,W+60,H+60)}
+ if(z.night){ctx.strokeStyle='rgba(120,255,200,.22)';ctx.lineWidth=18;for(let k=0;k<3;k++){ctx.beginPath();for(let x=0;x<=W;x+=40)ctx.lineTo(x,80+k*40+Math.sin(x*.01+T*.03+k)*25);ctx.stroke()}}
+ ctx.fillStyle=mix('#4a4843','#6cb58b',clean);
+ mts.forEach(m=>{m.x-=s*.2*DT;if(m.x+m.w<0)m.x=W;ctx.beginPath();ctx.moveTo(m.x,H);ctx.lineTo(m.x+m.w/2,H-m.h);ctx.lineTo(m.x+m.w,H);ctx.fill()});
+}
+function drawIntro(p){
+ const c=matColors[cfg.mat],q=Math.max(0,p*2-1);
+ ctx.save();ctx.translate(W/2+(plane.x-W/2)*q,H/2+(plane.y-H/2)*q);
+ if(p<.5){const f=p*2,h=90*(1-f*.8);ctx.rotate(-.3*f);ctx.fillStyle=c[0];ctx.fillRect(-45,-h/2,90,h);ctx.strokeStyle='#0005';ctx.beginPath();ctx.moveTo(-45,0);ctx.lineTo(45,0);ctx.stroke()}
+ else{ctx.rotate((1-q)*.6);ctx.scale(1.6-.6*q,1.6-.6*q);drawPlane()}
+ ctx.restore();
+ ctx.fillStyle='#fff';ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.fillText(p<.5?'摺紙中…':'放飛！',W/2,H/2-90);
+}
+function cloud(c){
+ if(c.t===0){const r=c.r+Math.sin(T*.1)*5,g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.3,'rgba(100,255,180,.8)');g.addColorStop(1,'rgba(50,200,100,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(c.x,c.y,r,0,7);ctx.fill();ctx.save();ctx.translate(c.x,c.y);ctx.rotate(T*.05);ctx.fillStyle='#fff';ctx.fillRect(-10,-2,20,4);ctx.fillRect(-2,-10,4,20);ctx.restore()}
+ else{const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r);g.addColorStop(0,'rgba(40,20,50,.95)');g.addColorStop(.4,'rgba(60,50,60,.8)');g.addColorStop(1,'rgba(40,40,40,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,7);ctx.fill()}
+}
 
-        <div class="flex-1 bg-gray-100 p-6 rounded-xl flex flex-col justify-between">
-            <div>
-                <h2 class="text-xl font-bold text-gray-800 mb-4">📊 預估物理與環保數值</h2>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm font-bold text-gray-700"><span>重力與慣性 (Weight)</span><span id="val-weight">50</span></div>
-                        <div class="w-full bg-gray-300 rounded h-3 mt-1"><div id="bar-weight" class="bg-blue-500 h-3 rounded stat-bar"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm font-bold text-gray-700"><span>升力 (Lift)</span><span id="val-lift">50</span></div>
-                        <div class="w-full bg-gray-300 rounded h-3 mt-1"><div id="bar-lift" class="bg-cyan-400 h-3 rounded stat-bar"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm font-bold text-gray-700"><span>基礎速度 (Speed)</span><span id="val-speed">50</span></div>
-                        <div class="w-full bg-gray-300 rounded h-3 mt-1"><div id="bar-speed" class="bg-red-400 h-3 rounded stat-bar"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm font-bold text-gray-700"><span>抗風穩定度 (Stability)</span><span id="val-stab">50</span></div>
-                        <div class="w-full bg-gray-300 rounded h-3 mt-1"><div id="bar-stab" class="bg-purple-500 h-3 rounded stat-bar"></div></div>
-                    </div>
-                    <div class="pt-2 border-t border-gray-300">
-                        <div class="flex justify-between text-sm font-bold text-gray-800"><span>Eco 效能比 (Eco-Score)</span><span id="val-eco">50</span></div>
-                        <div class="w-full bg-gray-300 rounded h-4 mt-1"><div id="bar-eco" class="bg-green-500 h-4 rounded stat-bar shadow-inner"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6 text-center">
-                <p class="text-xs text-gray-500 mb-2">【操作】長按<span class="font-bold text-blue-600">滑鼠/螢幕/空白鍵</span>消耗能量爬升，放開滑翔</p>
-                <button onclick="startGame()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-8 rounded-xl text-xl shadow-lg transition-transform transform hover:scale-105 border-b-4 border-green-800 active:border-b-0 active:translate-y-1">🚀 進入跑酷試飛</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 遊戲畫布與 UI -->
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="gameUI" class="hidden absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-10">
-        <div class="bg-white/90 p-3 rounded-xl shadow-lg font-bold text-lg border-2 border-gray-200">
-            <div>飛行距離: <span id="ui-dist" class="text-blue-600 text-2xl">0</span> m</div>
-            <div class="text-sm text-gray-600">分數預估: <span id="ui-score" class="text-green-600">0</span> (Eco: <span id="ui-eco-mult">1.0</span>x)</div>
-        </div>
-        
-        <div class="bg-white/90 p-3 rounded-xl shadow-lg border-2 border-gray-200 text-center w-40">
-            <div class="text-sm font-bold text-gray-500 mb-1">天氣狀態 (風向)</div>
-            <div id="ui-wind" class="text-xl font-black text-gray-800">--</div>
-        </div>
-
-        <div class="bg-white/90 p-3 rounded-xl shadow-lg border-2 border-gray-200 w-48">
-            <div class="text-sm font-bold mb-1 text-gray-700 flex justify-between">
-                <span>⚡ 動能能量</span>
-                <span id="ui-energy-text">100%</span>
-            </div>
-            <div class="w-full bg-gray-300 rounded-full h-4 shadow-inner">
-                <div id="ui-energy" class="bg-yellow-400 h-4 rounded-full transition-all"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="gameOver" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-3xl shadow-2xl text-center border-4 border-red-500 z-50">
-        <h2 class="text-4xl font-black text-red-600 mb-4" id="fail-reason">飛行結束</h2>
-        <div class="text-lg space-y-2 mb-6 bg-gray-50 p-4 rounded-lg">
-            <p>總飛行距離: <span id="end-dist" class="font-bold text-2xl">0</span> m</p>
-            <p>環保效能加成: <span id="end-eco" class="font-bold text-green-600 text-2xl">0</span>%</p>
-        </div>
-        <h3 class="text-4xl font-black text-blue-600 border-t-2 border-gray-200 pt-6">最終得分: <span id="end-score">0</span></h3>
-        <!-- ============ 這裡開始是新增的排行榜 UI ============ -->
-        <div class="mt-6 bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200 text-left">
-            <h4 class="font-bold text-lg text-yellow-800 border-b border-yellow-200 pb-2 mb-2">🏆 本機英雄榜 (Top 5)</h4>
-            <ol id="lb-list" class="list-decimal list-inside text-gray-700 space-y-1 font-bold"></ol>
-        </div>
-        <!-- =================================================== -->
-        <button onclick="location.reload()" class="mt-8 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg w-full transition-transform hover:scale-105">🔧 回到機庫重新設計</button>
-    </div>
-
-    <script>
-        // 數值設定庫
-        const materials = [
-            [30, 60, 40, 30, 95], [80, 40, 60, 80, 70], [50, 50, 50, 50, 60],
-            [60, 40, 50, 60, 100], [40, 70, 90, 70, 10], [20, 80, 30, 20, 100]
-        ];
-        const matColors = [
-            ['#d1d5db', '#9ca3af', '#6b7280'], ['#d2b48c', '#a0522d', '#8b4513'], ['#ffffff', '#e5e7eb', '#9ca3af'],
-            ['#fef08a', '#ca8a04', '#a16207'], ['#bae6fd', '#38bdf8', '#0ea5e9'], ['#bbf7d0', '#4ade80', '#16a34a']
-        ];
-        const shapes = [
-            [20, 90, 30, 60, 50], [70, 30, 90, 40, 50], [50, 50, 50, 80, 50],
-            [50, 40, 40, 10, 50], [30, 70, 70, 30, 50], [40, 80, 40, 90, 50]
-        ];
-        const addons = [
-            [50, 50, 50, 50, 50], [80, 40, 60, 90, 40], [90, 30, 40, 20, 50],
-            [40, 70, 70, 60, 70], [50, 80, 80, 80, 0], [50, 90, 40, 60, 50]
-        ];
-
-        let finalStats = { weight: 50, lift: 50, speed: 50, stab: 50, eco: 50 };
-        let activeConfig = { mat: 2, shape: 0, addon: 0 };
-
-        function updateStats() {
-            activeConfig.mat = parseInt(document.getElementById('sel-material').value);
-            activeConfig.shape = parseInt(document.getElementById('sel-shape').value);
-            activeConfig.addon = parseInt(document.getElementById('sel-addon').value);
-
-            let m = materials[activeConfig.mat]; let s = shapes[activeConfig.shape]; let a = addons[activeConfig.addon];
-
-            finalStats.weight = Math.floor((m[0]*0.5 + s[0]*0.3 + a[0]*0.2));
-            finalStats.lift = Math.floor((m[1]*0.3 + s[1]*0.5 + a[1]*0.2));
-            finalStats.speed = Math.floor((m[2]*0.4 + s[2]*0.5 + a[2]*0.1));
-            finalStats.stab = Math.floor((m[3]*0.3 + s[3]*0.3 + a[3]*0.4));
-            finalStats.eco = Math.floor((m[4]*0.6 + a[4]*0.4));
-
-            ['weight', 'lift', 'speed', 'stab', 'eco'].forEach(stat => {
-                let val = Math.max(5, Math.min(100, finalStats[stat]));
-                document.getElementById(`val-${stat}`).innerText = val;
-                let bar = document.getElementById(`bar-${stat}`);
-                bar.style.width = `${val}%`;
-                
-                if(stat === 'eco') {
-                    bar.className = val < 40 ? 'bg-red-500 h-4 rounded stat-bar shadow-inner' : 
-                                   val > 75 ? 'bg-green-400 h-4 rounded stat-bar shadow-inner' : 
-                                   'bg-green-600 h-4 rounded stat-bar shadow-inner';
-                }
-            });
-        }
-        updateStats();
-
-        // --- 遊戲引擎 ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let isPlaying = false, isPressing = false, isDead = false; // 新增死亡狀態
-        let deathReason = "";
-        
-        let plane = { x: 0, y: 0, vy: 0, energy: 100, rotation: 0 };
-        let distance = 0, particles = [], clouds = [], birds = [], mountains = [], windLines = [];
-        let currentWind = 0, targetWind = 0, windTimer = 0, globalTime = 0;
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            plane.x = canvas.width * 0.2;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-
-        // 綁定輸入操作 (包含空白鍵與觸控)
-        window.addEventListener('mousedown', () => { 
-            if(isPlaying && !isDead) isPressing = true; 
-        });
-        window.addEventListener('mouseup', () => isPressing = false);
-        
-        window.addEventListener('touchstart', (e) => { 
-            // 只有在「遊戲進行中」才啟動防滑動，避免卡住機庫的按鈕
-            if(isPlaying && !isDead) { 
-                isPressing = true; 
-                e.preventDefault(); 
-            } 
-        }, {passive:false});
-        window.addEventListener('touchend', () => isPressing = false);
-        
-        window.addEventListener('keydown', (e) => { 
-            if(e.code === 'Space' && isPlaying && !isDead) { 
-                isPressing = true; 
-                e.preventDefault(); // 防止空白鍵捲動網頁
-            } 
-        });
-        window.addEventListener('keyup', (e) => { 
-            if(e.code === 'Space') isPressing = false; 
-        });
-
-        function startGame() {
-            document.getElementById('workshop').classList.add('hidden');
-            canvas.style.display = 'block';
-            document.getElementById('gameUI').classList.remove('hidden');
-            
-            plane.y = canvas.height / 2; plane.vy = 0; plane.energy = 100; plane.rotation = 0;
-            distance = 0; globalTime = 0; isDead = false; deathReason = "飛行結束";
-            particles = []; clouds = []; birds = []; windLines = [];
-            
-            mountains = [];
-            for(let i=0; i<5; i++) { mountains.push({ x: i * (canvas.width / 3), height: Math.random() * 200 + 100, width: canvas.width / 2 }); }
-            isPlaying = true; loop();
-        }
-
-        function triggerCrash(reason) {
-            isDead = true;
-            isPressing = false;
-            deathReason = reason;
-            document.getElementById('fail-reason').innerText = deathReason;
-            
-            // 撞擊後飛機彈起並準備失控旋轉
-            plane.vy = -6; 
-
-            // 噴發羽毛與碎片粒子
-            for(let k=0; k<15; k++) {
-                particles.push({
-                    x: plane.x, y: plane.y,
-                    vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15,
-                    life: 1.0, decay: 0.015,
-                    isFeather: true, color: 'rgba(230,230,230,'
-                });
-            }
-        }
-
-        function gameOver() {
-            isPlaying = false;
-            document.getElementById('gameOver').classList.remove('hidden');
-            
-            // 計算最終分數
-            let finalScore = Math.floor(distance * (finalStats.eco / 100));
-            document.getElementById('end-dist').innerText = Math.floor(distance);
-            document.getElementById('end-eco').innerText = finalStats.eco;
-            document.getElementById('end-score').innerText = finalScore;
-
-            // --- 排行榜儲存邏輯 (LocalStorage) ---
-            // 讀取舊資料，若無則預設為空陣列
-            let lb = JSON.parse(localStorage.getItem('ecoPlaneLB')) || [];
-            
-            // 稍微延遲一下跳出輸入框，讓玩家先看到畫面
-            setTimeout(() => {
-                if(finalScore > 0) {
-                    let playerName = prompt(`🎉 恭喜獲得 ${finalScore} 分！\n請輸入你的大名來記錄成績：`, "環保飛行員");
-                    if(playerName) {
-                        lb.push({ name: playerName, score: finalScore });
-                        lb.sort((a, b) => b.score - a.score); // 依分數由高到低排序
-                        lb = lb.slice(0, 5); // 只保留前 5 名
-                        localStorage.setItem('ecoPlaneLB', JSON.stringify(lb)); // 存回瀏覽器
-                    }
-                }
-                
-                // 更新排行榜畫面
-                let lbList = document.getElementById('lb-list');
-                lbList.innerHTML = '';
-                lb.forEach((entry) => {
-                    lbList.innerHTML += `<li><span class="text-gray-900">${entry.name}</span> : <span class="text-blue-600">${entry.score}</span> 分</li>`;
-                });
-            }, 500); // 延遲 0.5 秒跳出
-        }
-
-        function drawCustomPlane(ctx, config) {
-            let nose = [30, 0], rw = [-20, -15], lw = [-20, 15], tail = [-10, 0];
-            switch(config.shape) {
-                case 0: rw = [-15, -28]; lw = [-15, 28]; tail = [-5, 0]; break;
-                case 1: nose = [45, 0]; rw = [-25, -10]; lw = [-25, 10]; break;
-                case 2: nose = [15, 0]; break;
-                case 3: rw = [-5, -8]; lw = [-25, 22]; tail = [-12, 4]; break;
-                case 4: nose = [15, 0]; rw = [-10, -15]; lw = [-10, 15]; break;
-            }
-            let colors = matColors[config.mat];
-            ctx.fillStyle = colors[0]; ctx.beginPath();
-            if(config.shape === 2) { ctx.moveTo(nose[0], -4); ctx.lineTo(nose[0], 0); } else { ctx.moveTo(nose[0], nose[1]); }
-            ctx.lineTo(rw[0], rw[1]); ctx.lineTo(tail[0], tail[1]); ctx.fill();
-
-            ctx.fillStyle = colors[1]; ctx.beginPath();
-            if(config.shape === 2) { ctx.moveTo(nose[0], 4); ctx.lineTo(nose[0], 0); } else { ctx.moveTo(nose[0], nose[1]); }
-            ctx.lineTo(lw[0], lw[1]); ctx.lineTo(tail[0], tail[1]); ctx.fill();
-
-            ctx.fillStyle = colors[2]; ctx.beginPath();
-            if(config.shape === 2) { ctx.moveTo(nose[0], 0); } else { ctx.moveTo(nose[0], nose[1]); }
-            ctx.lineTo(tail[0]-10, 3); ctx.lineTo(tail[0], tail[1]); ctx.fill();
-
-            if(config.shape === 5) {
-                ctx.fillStyle = colors[2];
-                ctx.beginPath(); ctx.moveTo(rw[0], rw[1]); ctx.lineTo(rw[0]+5, rw[1]-8); ctx.lineTo(rw[0]-5, rw[1]); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(lw[0], lw[1]); ctx.lineTo(lw[0]+5, lw[1]+8); ctx.lineTo(lw[0]-5, lw[1]); ctx.fill();
-            }
-            if(config.addon === 1) { ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(nose[0]-3, 0, 3, 0, Math.PI*2); ctx.stroke(); }
-            if(config.addon === 4) {
-                ctx.fillStyle = 'rgba(210, 180, 140, 0.7)'; ctx.fillRect(0, -10, 8, 20);
-                ctx.save(); ctx.rotate(0.5); ctx.fillRect(-15, -5, 6, 15); ctx.restore();
-            }
-            if(config.mat === 0) {
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(15, -2); ctx.moveTo(-10, 5); ctx.lineTo(5, 8); ctx.stroke();
-            }
-        }
-
-        function drawEffects(c) {
-            if (c.type === 0) {
-                let pulse = Math.sin(globalTime * 0.1) * 5; let r = c.radius + pulse;
-                let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r);
-                grad.addColorStop(0, 'rgba(255, 255, 255, 1)'); grad.addColorStop(0.3, 'rgba(100, 255, 180, 0.8)'); grad.addColorStop(1, 'rgba(50, 200, 100, 0)');
-                ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI*2); ctx.fill();
-                ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(globalTime * 0.05); ctx.fillStyle = '#ffffff';
-                ctx.fillRect(-10, -2, 20, 4); ctx.fillRect(-2, -10, 4, 20); ctx.restore();
-            } else {
-                let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.radius);
-                grad.addColorStop(0, 'rgba(40, 20, 50, 0.95)'); grad.addColorStop(0.4, 'rgba(60, 50, 60, 0.8)'); grad.addColorStop(1, 'rgba(40, 40, 40, 0)');
-                ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = 'rgba(70, 50, 70, 0.6)';
-                ctx.beginPath(); ctx.arc(c.x + Math.sin(globalTime*0.05)*15, c.y + Math.cos(globalTime*0.05)*15, c.radius*0.3, 0, Math.PI*2); ctx.fill();
-            }
-        }
-
-        function loop() {
-            if (!isPlaying) return;
-            globalTime++;
-
-            windTimer--;
-            if(windTimer <= 0) { targetWind = (Math.random() * 10) - 4; windTimer = 180 + Math.random() * 120; }
-            currentWind += (targetWind - currentWind) * 0.02;
-
-            let gravity = (finalStats.weight / 100) * 0.4 + 0.15;
-            let liftPower = (finalStats.lift / 100) * 0.8 + 0.25;
-            let baseSpeed = (finalStats.speed / 100) * 6 + 3;
-            
-            let windResistance = (finalStats.stab * 0.5 + finalStats.weight * 0.5) / 100;
-            let effectiveWind = currentWind < 0 ? currentWind * (1 - windResistance*0.6) : currentWind;
-            let forwardSpeed = baseSpeed + effectiveWind; 
-            if(forwardSpeed < 1) forwardSpeed = 1;
-
-            if(!isDead) {
-                // 正常飛行控制
-                if (isPressing && plane.energy > 0) {
-                    plane.vy -= liftPower; plane.energy -= 0.2; 
-                } else {
-                    plane.vy += gravity; 
-                    if(currentWind < 0) plane.vy += Math.abs(currentWind) * 0.05 * (1 - windResistance);
-                }
-                
-                plane.vy *= 0.9;
-                plane.y += plane.vy;
-                let targetRot = plane.vy * 0.05;
-                plane.rotation += (targetRot - plane.rotation) * 0.1;
-
-                distance += forwardSpeed / 10;
-                plane.energy -= 0.03;
-
-                // 邊界判定：掉地上或飛太高(天花板出界) 或 能量耗盡
-                if (plane.y > canvas.height - 10) { deathReason = "墜毀於地面！"; gameOver(); return; }
-                if (plane.y < -20) { deathReason = "飛出大氣層失聯！(超過頂部邊界)"; gameOver(); return; }
-                if (plane.energy <= 0) { deathReason = "動能耗盡！"; gameOver(); return; }
-
-            } else {
-                // 死亡狀態：失控旋轉下墜
-                plane.vy += gravity;
-                plane.y += plane.vy;
-                plane.x += forwardSpeed * 0.3; // 慣性往前一點
-                plane.rotation += 0.3; // 瘋狂旋轉
-                if (plane.y > canvas.height + 50) { gameOver(); return; }
-            }
-
-            // 繪製背景 (天空與山)
-            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            if(finalStats.eco >= 70) { grd.addColorStop(0, '#53a0f7'); grd.addColorStop(1, '#c0f7db'); } 
-            else if (finalStats.eco <= 30) { grd.addColorStop(0, '#69645a'); grd.addColorStop(1, '#a6a195'); } 
-            else { grd.addColorStop(0, '#7ebaf5'); grd.addColorStop(1, '#d3e2ed'); }
-            ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = finalStats.eco <= 30 ? '#4a4843' : '#6cb58b';
-            mountains.forEach(m => {
-                m.x -= forwardSpeed * 0.2;
-                if(m.x + m.width < 0) m.x = canvas.width;
-                ctx.beginPath(); ctx.moveTo(m.x, canvas.height);
-                ctx.lineTo(m.x + m.width/2, canvas.height - m.height);
-                ctx.lineTo(m.x + m.width, canvas.height); ctx.fill();
-            });
-
-            // 生成飛鳥
-            if(!isDead && Math.random() < 0.015) {
-                birds.push({
-                    x: canvas.width + 50,
-                    y: Math.random() * (canvas.height - 200) + 50,
-                    speed: Math.random() * 2 + 3,
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-
-            // 渲染飛鳥與判定
-            ctx.strokeStyle = '#1f2937'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            for(let i = birds.length - 1; i >= 0; i--) {
-                let b = birds[i];
-                b.x -= (forwardSpeed + b.speed);
-                
-                // 畫飛鳥 (拍翅膀動畫)
-                let flap = Math.sin(globalTime * 0.3 + b.phase) * 10;
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(b.x - 15, b.y - flap);
-                ctx.quadraticCurveTo(b.x - 7, b.y - flap/2, b.x, b.y);
-                ctx.quadraticCurveTo(b.x + 7, b.y - flap/2, b.x + 15, b.y - flap);
-                ctx.stroke();
-
-                if(!isDead) {
-                    let dist = Math.hypot(plane.x - b.x, plane.y - b.y);
-                    if(dist < 25) { triggerCrash("遭遇鳥擊墜毀！🐦"); }
-                }
-                if(b.x < -100) birds.splice(i, 1);
-            }
-
-            // 生成雲霧
-            if(Math.random() < 0.02) {
-                clouds.push({ x: canvas.width + 100, y: Math.random() * (canvas.height - 150) + 50, radius: Math.random() * 30 + 30, type: Math.random() < 0.5 ? 0 : 1 });
-            }
-            for (let i = clouds.length - 1; i >= 0; i--) {
-                let c = clouds[i]; c.x -= forwardSpeed; drawEffects(c);
-                if (!isDead) {
-                    let dist = Math.hypot(plane.x - c.x, plane.y - c.y);
-                    if (dist < c.radius + 10) {
-                        if (c.type === 0) { plane.energy = Math.min(100, plane.energy + 25); plane.vy -= 4; } 
-                        else { plane.energy -= 15; plane.vy += 4; }
-                        clouds.splice(i, 1);
-                    }
-                }
-                if (c.x < -100) clouds.splice(i, 1);
-            }
-
-            // 風速線
-            if(Math.random() < 0.2) { windLines.push({ x: currentWind > 0 ? -50 : canvas.width + 50, y: Math.random() * canvas.height, length: Math.random() * 50 + 50, speed: currentWind * 3 }); }
-            ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
-            for(let i = windLines.length-1; i>=0; i--) {
-                let wl = windLines[i]; wl.x += wl.speed - forwardSpeed;
-                ctx.beginPath(); ctx.moveTo(wl.x, wl.y); ctx.lineTo(wl.x + wl.length, wl.y); ctx.stroke();
-                if(wl.x > canvas.width + 200 || wl.x < -200) windLines.splice(i, 1);
-            }
-
-            // 粒子特效 (包含尾跡與羽毛)
-            if(!isDead && Math.random() < 0.5) {
-                let isEco = finalStats.eco >= 50;
-                particles.push({
-                    x: plane.x - 20, y: plane.y + (Math.random()*10 - 5),
-                    vx: -forwardSpeed + (Math.random()*2 - 1), vy: Math.random()*2 - 1,
-                    life: 1.0, decay: isEco ? 0.04 : 0.015, isFeather: false,
-                    color: isEco ? `rgba(100,255,150,` : `rgba(30,20,30,`
-                });
-            }
-            for(let i=particles.length-1; i>=0; i--) {
-                let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= p.decay;
-                
-                if(p.isFeather) {
-                    // 羽毛飄落物理
-                    p.vx *= 0.95; p.vy += 0.1;
-                    ctx.fillStyle = p.color + p.life + ')';
-                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 15);
-                    ctx.beginPath(); ctx.ellipse(0, 0, 8, 3, 0, 0, Math.PI*2); ctx.fill();
-                    ctx.restore();
-                } else {
-                    if(finalStats.eco >= 50) {
-                        ctx.fillStyle = p.color + `${p.life})`;
-                        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 5); ctx.fillRect(-3, -3, 6, 6); ctx.restore();
-                    } else {
-                        let smGrd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, (1-p.life)*20);
-                        smGrd.addColorStop(0, p.color + `${p.life})`); smGrd.addColorStop(1, 'rgba(0,0,0,0)');
-                        ctx.fillStyle = smGrd; ctx.beginPath(); ctx.arc(p.x, p.y, (1-p.life)*20, 0, Math.PI*2); ctx.fill();
-                    }
-                }
-                if(p.life <= 0) particles.splice(i, 1);
-            }
-
-            // 繪製紙飛機
-            ctx.save();
-            ctx.translate(plane.x, plane.y);
-            ctx.rotate(plane.rotation);
-            drawCustomPlane(ctx, activeConfig);
-            ctx.restore();
-
-            // 更新 UI
-            document.getElementById('ui-dist').innerText = Math.floor(distance);
-            document.getElementById('ui-score').innerText = Math.floor(distance * (finalStats.eco / 100));
-            document.getElementById('ui-eco-mult').innerText = (finalStats.eco / 100).toFixed(2);
-            
-            let energyBar = document.getElementById('ui-energy');
-            energyBar.style.width = Math.max(0, plane.energy) + '%';
-            document.getElementById('ui-energy-text').innerText = Math.floor(plane.energy) + '%';
-            if (plane.energy < 20) energyBar.classList.replace('bg-yellow-400', 'bg-red-500');
-            else energyBar.classList.replace('bg-red-500', 'bg-yellow-400');
-
-            let windUI = document.getElementById('ui-wind');
-            if (currentWind > 1) windUI.innerHTML = `<span class="text-blue-500">➡️ 順風 (+${Math.abs(Math.floor(currentWind))})</span>`;
-            else if (currentWind < -1) windUI.innerHTML = `<span class="text-red-600">⬅️ 逆風 (-${Math.abs(Math.floor(currentWind))})</span>`;
-            else windUI.innerHTML = `<span class="text-gray-400">➖ 靜風</span>`;
-
-            requestAnimationFrame(loop);
-        }
-    </script>
+function loop(t){
+ if(!playing)return;
+ let dt=Math.min(2.5,(t-last)/16.667||1);last=t;
+ if(slow>0){slow-=dt;dt*=.45}
+ DT=dt;T+=dt;
+ if(intro>0){intro-=dt;bg(2);drawIntro(Math.min(1,1-intro/70));requestAnimationFrame(loop);return}
+ const m=md(),zn=zones[zoneI];
+ wt-=dt;if(wt<=0){tw=Math.random()*zn.w-zn.w*.4;wt=180+Math.random()*120}
+ wind+=(tw-wind)*.02*dt;
+ const g=(F.weight/100*.4+.15)*(1+(m.sink||0)),lp=(F.lift/100*.8+.25)*(1+(m.lift||0)),wr=(F.stab*.5+F.weight*.5)/100;
+ let fs=Math.max(1,F.speed/100*6+3+(wind<0?wind*(1-wr*.6):wind));
+ if(!dead){
+  if(pressing&&plane.energy>0){plane.vy-=lp*dt;plane.energy-=.2*(1-(m.eff||0))*dt}
+  else{
+   plane.vy+=g*dt;if(wind<0)plane.vy+=Math.abs(wind)*.05*(1-wr)*dt;
+   if(plane.vy>1){const d=Math.min(plane.vy,6)*.3*(1+(m.dive||0));fs+=d;if(d>1.2&&Math.random()<.5*dt)parts.push({x:plane.x-10,y:plane.y,vx:-fs,vy:0,l:1,dc:.08,f:3,c:'255,255,255'})}
+  }
+  plane.vy*=Math.pow(.9,dt);
+  if(plane.y<30){plane.vy+=(30-plane.y)*.08*dt;if(plane.y<-10)plane.y=-10}
+  plane.y+=plane.vy*dt;plane.rot+=(plane.vy*.05-plane.rot)*.1*dt;
+  dist+=fs/10*dt;plane.energy-=.03*dt;
+  const zi=Math.floor(dist/500)%zones.length;if(zi!==zoneI){zoneI=zi;banner=120;snd(660,.25,'triangle')}
+  clean+=(((F.eco>=50?1:-1)*Math.abs(F.eco-50)/50*.00012)-(m.trail?.00025:0)-zn.smog*.0001)*dt;clean=Math.max(0,Math.min(1,clean));
+  if(comboT>0){comboT-=dt;if(comboT<=0)combo=0}if(inv>0)inv-=dt;
+  if(plane.y>H-10){reason='墜毀於地面！';over();return}
+  if(plane.energy<=0){reason='動能耗盡！';over();return}
+ }else{
+  plane.vy+=g*dt;plane.y+=plane.vy*dt;plane.x+=fs*.3*dt;plane.rot+=.3*dt;
+  if(plane.y>H+50){over();return}
+ }
+ ctx.save();
+ if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake-=dt}
+ bg(fs);
+ // 風速線
+ if(Math.random()<.2*dt)wl.push({x:wind>0?-50:W+50,y:Math.random()*H,l:Math.random()*50+50,s:wind*3});
+ ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;
+ for(let i=wl.length-1;i>=0;i--){const w=wl[i];w.x+=(w.s-fs)*dt;ctx.beginPath();ctx.moveTo(w.x,w.y);ctx.lineTo(w.x+w.l,w.y);ctx.stroke();if(w.x>W+200||w.x<-200)wl.splice(i,1)}
+ // 飛鳥預警與飛鳥
+ if(!dead&&warns.length<2&&birds.length<28&&Math.random()<zn.b*dt)newWarn();
+ for(let i=warns.length-1;i>=0;i--){
+  const w=warns[i];w.t-=dt;
+  if(w.t<=0){spawn(w);warns.splice(i,1);continue}
+  if(Math.floor(w.t/6)%2){ctx.fillStyle=w.col+'55';ctx.fillRect(W-12,w.y-w.sp/2,12,w.sp);ctx.fillStyle=w.col;ctx.beginPath();ctx.arc(W-30,w.y,15,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(w.lb,W-30,w.y+6)}
+ }
+ ctx.strokeStyle='#1f2937';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=4;
+ for(let i=birds.length-1;i>=0;i--){
+  const b=birds[i];moveBird(b,fs,dt);drawBird(b);
+  
+  
+  if(!dead){
+   const d=Math.hypot(plane.x-b.x,plane.y-b.y);
+   if(b.ty==='dove'){if(d<b.r){plane.energy=Math.min(100,plane.energy+15);bonus+=20;txt(b.x,b.y-20,'信鴿 +能量','#bbf7d0');burst(b.x,b.y,'255,255,255',10);snd(820,.15,'triangle');birds.splice(i,1);continue}}else if(d<b.r&&inv<=0){
+    if(shield){shield=0;inv=45;birds.splice(i,1);shake=12;txt(plane.x,plane.y-30,'護盾擋下！','#fff');burst(b.x,b.y,'230,230,230',12);snd(200,.2,'square');continue}
+    crash('遭遇'+BN[b.ty]+'撞擊墜毀！🐦');
+   }else if(d<b.r+35&&!b.g.nm){
+    b.g.nm=1;combo++;comboT=180;maxCombo=Math.max(maxCombo,combo);bonus+=10*combo*(b.ty==='eagle'?2:1);slow=14;
+    txt(plane.x+20,plane.y-30,'擦身而過 ×'+combo,'#fde047');snd(900+combo*40,.1);
+   }
+  }
+  if(b.x<-100)birds.splice(i,1);
+ }
+ // 雲
+ if(Math.random()<.02*dt)clouds.push({x:W+100,y:Math.random()*(H-150)+50,r:Math.random()*30+30,t:Math.random()<Math.max(.15,Math.min(.85,zn.d*(1.5-clean)))?1:0});
+ for(let i=clouds.length-1;i>=0;i--){
+  const c=clouds[i];c.x-=fs*dt;cloud(c);
+  if(!dead&&Math.hypot(plane.x-c.x,plane.y-c.y)<c.r+10){
+   if(c.t===0){plane.energy=Math.min(100,plane.energy+25);plane.vy-=4;txt(c.x,c.y,'+能量','#bbf7d0');snd(780,.12,'triangle')}
+   else{purified++;clean=Math.min(1,clean+.06);bonus+=30;plane.energy-=12*(1-F.eco/130);plane.vy+=2.5;txt(c.x,c.y,'淨化 +30','#fff');burst(c.x,c.y,'255,255,255',10);snd(440,.15,'triangle')}
+   clouds.splice(i,1);continue;
+  }
+  if(c.x<-100)clouds.splice(i,1);
+ }
+ // 尾跡與粒子
+ if(!dead&&Math.random()<.5*dt){const good=F.eco>=50&&!m.trail;parts.push({x:plane.x-20,y:plane.y+Math.random()*10-5,vx:-fs+Math.random()*2-1,vy:Math.random()*2-1,l:1,dc:good?.04:.015,f:good?0:1,c:good?'100,255,150':'30,20,30'})}
+ for(let i=parts.length-1;i>=0;i--){
+  const p=parts[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=p.dc*dt;
+  const col='rgba('+p.c+','+Math.max(0,p.l)+')';
+  if(p.f===2){p.vx*=.95;p.vy+=.1*dt;ctx.fillStyle=col;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.l*15);ctx.beginPath();ctx.ellipse(0,0,8,3,0,0,7);ctx.fill();ctx.restore()}
+  else if(p.f===1){const r=(1-p.l)*20+1,sg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);sg.addColorStop(0,col);sg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill()}
+  else if(p.f===3){ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.x,p.y,3,0,7);ctx.fill()}
+  else{ctx.fillStyle=col;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.l*5);ctx.fillRect(-3,-3,6,6);ctx.restore()}
+  if(p.l<=0)parts.splice(i,1);
+ }
+ // 紙飛機
+ ctx.save();ctx.translate(plane.x,plane.y);ctx.rotate(plane.rot);drawPlane();
+ if(shield&&!dead){ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(5,0,30,0,7);ctx.stroke()}
+ ctx.restore();
+ // 飄字、頂部警示、區域標題
+ for(let i=texts.length-1;i>=0;i--){const q=texts[i];q.y-=.6*dt;q.l-=dt;ctx.globalAlpha=Math.max(0,Math.min(1,q.l/30));ctx.fillStyle=q.c;ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.fillText(q.s,q.x,q.y);if(q.l<=0)texts.splice(i,1)}
+ ctx.globalAlpha=1;
+ if(plane.y<60){ctx.fillStyle='rgba(255,80,80,'+(1-plane.y/60)*.25+')';ctx.fillRect(0,0,W,50)}
+ if(banner>0){banner-=dt;ctx.globalAlpha=Math.min(1,banner/40);ctx.font='bold 36px sans-serif';ctx.textAlign='center';ctx.lineWidth=5;ctx.strokeStyle='rgba(0,0,0,.4)';ctx.strokeText(zn.n,W/2,H*.3);ctx.fillStyle='#fff';ctx.fillText(zn.n,W/2,H*.3);ctx.globalAlpha=1}
+ ctx.restore();
+ // HUD
+ $('u-d').textContent=Math.floor(dist);$('u-s').textContent=score();$('u-c').textContent=combo>1?'🔥×'+combo:'';
+ $('u-z').textContent=zn.n;
+ const wu=$('u-w');if(wind>1){wu.textContent='➡️ 順風 +'+Math.floor(wind);wu.style.color='#2563eb'}else if(wind<-1){wu.textContent='⬅️ 逆風 '+Math.floor(wind);wu.style.color='#dc2626'}else{wu.textContent='➖ 靜風';wu.style.color='#9ca3af'}
+ const e=Math.max(0,plane.energy);$('u-e').style.width=e+'%';$('u-e').style.background=e<20?'#ef4444':'#facc15';$('u-et').textContent=Math.floor(e)+'%';
+ $('u-cl').style.width=clean*100+'%';$('u-ct').textContent=Math.floor(clean*100)+'%';$('u-sh').textContent=shield?'🛡️ 護盾待命':'';
+ requestAnimationFrame(loop);
+}
+</script>
 </body>
 </html>
