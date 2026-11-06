@@ -201,13 +201,31 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 綁定輸入操作 (包含空白鍵)
-        window.addEventListener('mousedown', () => { if(!isDead) isPressing = true; });
+
+        // 綁定輸入操作 (包含空白鍵與觸控)
+        window.addEventListener('mousedown', () => { 
+            if(isPlaying && !isDead) isPressing = true; 
+        });
         window.addEventListener('mouseup', () => isPressing = false);
-        window.addEventListener('touchstart', (e) => { if(!isDead) { isPressing = true; e.preventDefault(); } }, {passive:false});
+        
+        window.addEventListener('touchstart', (e) => { 
+            // 只有在「遊戲進行中」才啟動防滑動，避免卡住機庫的按鈕
+            if(isPlaying && !isDead) { 
+                isPressing = true; 
+                e.preventDefault(); 
+            } 
+        }, {passive:false});
         window.addEventListener('touchend', () => isPressing = false);
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space' && !isDead) { isPressing = true; e.preventDefault(); } });
-        window.addEventListener('keyup', (e) => { if(e.code === 'Space') { isPressing = false; } });
+        
+        window.addEventListener('keydown', (e) => { 
+            if(e.code === 'Space' && isPlaying && !isDead) { 
+                isPressing = true; 
+                e.preventDefault(); // 防止空白鍵捲動網頁
+            } 
+        });
+        window.addEventListener('keyup', (e) => { 
+            if(e.code === 'Space') isPressing = false; 
+        });
 
         function startGame() {
             document.getElementById('workshop').classList.add('hidden');
